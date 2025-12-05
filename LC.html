@@ -1433,7 +1433,7 @@
                         </div>
                     </div>
 
-                   <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a]">
+                   <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a] hidden">
                         <div class="border-l-4 border-yellow-500 pl-6">
                             <h3 class="text-3xl font-bold text-white mb-4 font-cinzel">Ayin <span class="text-sm text-gray-500 font-normal ml-2">(The Architect)</span></h3>
                             <blockquote class="text-xl italic text-gray-300 font-light mb-6">
@@ -2596,9 +2596,14 @@
             dataX.style.opacity = '0';
             dataX.style.transform = 'translateX(-20px)';
             
-            setTimeout(() => {
-                dataX.style.display = 'none'; // 完全隱藏舊內容以防點擊干擾
+           setTimeout(() => {
+                dataX.style.display = 'none'; // 隱藏 X
                 
+                // [修改] 先移除 hidden，再做動畫
+                dataA.classList.remove('hidden'); 
+                // 強制重繪，確保 transition 生效
+                void dataA.offsetWidth; 
+
                 dataA.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none');
                 dataA.classList.add('opacity-100', 'translate-x-0', 'pointer-events-auto');
             }, 500);
@@ -2630,11 +2635,21 @@
             const dataX = document.getElementById('ayin-data-x');
             const dataA = document.getElementById('ayin-data-a');
 
+            // [修改] 重置 X 的顯示
             dataX.style.display = 'block';
             setTimeout(() => {
                 dataX.style.opacity = '1';
                 dataX.style.transform = 'translateX(0)';
             }, 50);
+
+            // [修改] 隱藏 A
+            dataA.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none');
+            dataA.classList.remove('opacity-100', 'translate-x-0', 'pointer-events-auto');
+            
+            // 等待動畫結束後加上 hidden
+            setTimeout(() => {
+                dataA.classList.add('hidden');
+            }, 500);
 
             dataA.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none');
             dataA.classList.remove('opacity-100', 'translate-x-0', 'pointer-events-auto');
