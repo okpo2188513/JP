@@ -2046,7 +2046,151 @@
         function closeAbnoLevelModal() {
             abnoLevelModal.classList.remove('active');
         }
-        
+        // ================= Sephirah 資料庫與邏輯 =================
+        const sephirahData = [
+            // Asiyah (上層)
+            { 
+                id: "malkuth", name: "Malkuth", dept: "Control Team", color: "#D88D28", 
+                quote: "我可以做到的。我會昂首挺胸。",
+                desc: "控制部 (Control Team)。負責指揮設施的基礎運作與員工調度。Malkuth 總是充滿熱情與幹勁，試圖證明自己的價值，但在那份過度的積極背後，隱藏著深深的自卑與對失敗的恐懼。",
+                iconType: "notebook"
+            },
+            { 
+                id: "yesod", name: "Yesod", dept: "Information Team", color: "#603F93", 
+                quote: "明辨是非是關鍵。",
+                desc: "情報部 (Information Team)。負責處理與分析異想體的海量數據。Yesod 性格嚴謹、潔癖且毒舌，極度厭惡不理性的行為。他在這充滿死亡的設施中，試圖維持最後一絲理性的秩序。",
+                iconType: "eye"
+            },
+            { 
+                id: "hod", name: "Hod", dept: "Training Team", color: "#E08535", 
+                quote: "我只是...想成為一個好人。",
+                desc: "培訓部 (Training Team)。負責員工的教育與心理輔導。Hod 性格溫柔善良，總是為員工著想。然而，過去曾因她的舉報導致了慘劇，這份罪惡感至今仍日夜折磨著她。",
+                iconType: "leaf"
+            },
+            { 
+                id: "netzach", name: "Netzach", dept: "Safety Team", color: "#64BCA4", 
+                quote: "我們真的非做不可嗎？",
+                desc: "安保部 (Safety Team)。負責設施的安全維護。Netzach 厭倦了看著員工不斷死去，選擇依賴腦啡肽（Enkephalin）來麻痺自己，對一切都表現得漠不關心，只想逃避這殘酷的現實。",
+                iconType: "shield"
+            },
+            // Briah (中層)
+            { 
+                id: "tiphereth", name: "Tiphereth", dept: "Central Command", color: "#F8C200", 
+                quote: "這地方是我們出生之處，也是我們終將回歸之所。",
+                desc: "中央本部 (Central Command)。負責連接上下層並協調運作。由一對雙胞胎（Tiphereth A 與 B）共同管理。他們在這無盡的絕望循環中，試圖尋找存在的意義。",
+                iconType: "infinity"
+            },
+            { 
+                id: "gebura", name: "Gebura", dept: "Disciplinary Team", color: "#C02F1D", 
+                quote: "沉默即是同意。這同意足夠讓滾燙的鉛彈嵌入你的腦袋嗎？",
+                desc: "懲戒部 (Disciplinary Team)。負責鎮壓出逃的異想體與危險因素。前身為傳說中的收尾人「殷紅迷霧 (The Red Mist)」。她崇尚力量，認為只有戰鬥與鮮血才能證明生存的價值。",
+                iconType: "sword"
+            },
+            { 
+                id: "chesed", name: "Chesed", dept: "Welfare Team", color: "#3275A4", 
+                quote: "沒有一杯新鮮的咖啡，我就無法開始新的一天。",
+                desc: "福利部 (Welfare Team)。負責員工的福利與醫療。曾是富家少爺，性格溫和但略顯輕浮。在這吃人的體制中，他試圖用咖啡與幽默來對抗系統性的冷酷。",
+                iconType: "coffee"
+            },
+            // Atziluth (下層)
+            { 
+                id: "binah", name: "Binah", dept: "Extraction Team", color: "#d4af37", // Gold/Black
+                bgClass: "bg-[#0a0a0a]", // Darker BG
+                quote: "首腦的職責...即是切斷循環。",
+                desc: "研發部 (Extraction Team)。負責提取異想體與 E.G.O。前身為「首腦」的調律者 (Arbiter)。她掌握著都市最核心的秘密，以旁觀者的姿態，優雅地注視著這場悲劇的上演。",
+                iconType: "key"
+            },
+            { 
+                id: "hokma", name: "Hokma", dept: "Record Team", color: "#a3a3a3", 
+                quote: "時間只會向前流動。",
+                desc: "紀錄部 (Record Team)。負責記錄設施內發生的一切。他是時間的管理者，也是 Ayin 最忠誠的追隨者。為了完成劇本，他願意付出一切代價，哪怕是自我的犧牲。",
+                iconType: "clock"
+            },
+            { 
+                id: "kether", name: "Kether", dept: "Architecture Team", color: "#ffffff", 
+                bgClass: "bg-[#222]",
+                quote: "直面恐懼，創造未來。",
+                desc: "構築部 (Architecture Team)。設施的最底層，也是所有部門的根基。這裡是光之種萌發的地方，是一切故事的起點與終點。",
+                iconType: "tree"
+            }
+        ];
+
+        // 簡單的 SVG 圖標生成器
+        function getSephirahIcon(type) {
+            const icons = {
+                'notebook': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M8 10h8"/><path d="M8 14h8"/><path d="M8 18h8"/></svg>`,
+                'eye': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+                'leaf': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+                'shield': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+                'infinity': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z"/></svg>`,
+                'sword': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>`,
+                'coffee': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
+                'key': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>`,
+                'clock': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+                'tree': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L12 22"/><path d="M12 6L7 10"/><path d="M12 6L17 10"/><path d="M12 10L6 14"/><path d="M12 10L18 14"/><path d="M12 14L5 18"/><path d="M12 14L19 18"/></svg>`
+            };
+            return icons[type] || icons['notebook'];
+        }
+
+        // 初始化 Sephirah 網格
+        const sephirahGrid = document.getElementById('sephirah-grid-container');
+        sephirahData.forEach(sep => {
+            const card = document.createElement('div');
+            // 特殊背景處理 (Binah/Kether 較深色)
+            const bgClass = sep.bgClass || "bg-[#222]"; 
+            
+            card.className = `sephirah-card border border-gray-700 ${bgClass} p-6 group cursor-pointer relative overflow-hidden flex flex-col`;
+            card.onclick = () => openSephirahModal(sep.id);
+            
+            card.innerHTML = `
+                <div class="absolute -right-4 -bottom-4 text-8xl font-black text-white/5 group-hover:text-white/10 transition-colors select-none font-cinzel pointer-events-none">
+                    ${sep.name[0]}
+                </div>
+                
+                <div class="text-xs mb-2 uppercase tracking-widest font-bold" style="color: ${sep.color}">${sep.dept}</div>
+                <h4 class="text-2xl text-white font-bold mb-1 group-hover:translate-x-1 transition-transform">${sep.name}</h4>
+                <div class="h-px w-8 bg-gray-600 mb-4 mt-2 group-hover:w-full transition-all duration-500" style="background-color: ${sep.color}"></div>
+                <p class="text-gray-500 text-xs line-clamp-2">"${sep.quote}"</p>
+                
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" style="background-color: ${sep.color}"></div>
+            `;
+            sephirahGrid.appendChild(card);
+        });
+
+        // Modal Logic
+        const sephirahModal = document.getElementById('sephirah-modal');
+
+        function openSephirahModal(id) {
+            const data = sephirahData.find(s => s.id === id);
+            if (!data) return;
+
+            document.getElementById('sephirah-name').innerText = data.name.toUpperCase();
+            document.getElementById('sephirah-name').style.color = data.color;
+            document.getElementById('sephirah-dept-label').innerText = data.dept;
+            document.getElementById('sephirah-dept-label').style.borderColor = data.color;
+            document.getElementById('sephirah-dept-label').style.color = data.color;
+            
+            document.getElementById('sephirah-quote').innerText = data.quote;
+            document.getElementById('sephirah-desc').innerText = data.desc;
+            
+            document.getElementById('sephirah-main-icon').innerHTML = getSephirahIcon(data.iconType);
+            document.getElementById('sephirah-main-icon').style.color = data.color;
+            
+            document.getElementById('sephirah-bg-icon').innerHTML = getSephirahIcon(data.iconType);
+            
+            document.getElementById('sephirah-accent-line').style.backgroundColor = data.color;
+            document.getElementById('sephirah-status').style.color = data.color;
+            document.getElementById('sephirah-dept-vertical').innerText = data.dept.split(' ')[0].toUpperCase(); // 只取第一個字 (Control, Info...)
+
+            // 設置邊框顏色
+            document.getElementById('sephirah-modal-content').style.borderColor = data.color;
+
+            sephirahModal.classList.add('active');
+        }
+
+        function closeSephirahModal() {
+            sephirahModal.classList.remove('active');
+        }
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const hero = document.querySelector('header');
