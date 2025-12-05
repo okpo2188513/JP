@@ -2775,14 +2775,21 @@
             container.appendChild(spacer);
         }
 
-        // 展開圖書館 (優化動畫版)
+        // 展開圖書館 (修復淡出動畫版)
         function revealLibraryTree() {
             const leftPanel = document.getElementById('library-left-panel');
             const rightPanel = document.getElementById('library-right-panel');
             const inviteCard = document.getElementById('invitation-card');
 
-            // 1. 邀請函優雅退場 (淡出 + 縮小)
-            // 讓它在面板移動前就開始消失，避免被擠壓的突兀感
+            // [關鍵修正 1] 移除進場動畫類別
+            // 這一步非常重要，必須解鎖 CSS Animation 對屬性的控制，Transition 才會生效
+            inviteCard.classList.remove('animate-slide-up');
+            
+            // [關鍵修正 2] 強制瀏覽器重繪 (Reflow)
+            // 確保瀏覽器在套用新的 opacity 之前，已經更新了移除 class 後的狀態
+            void inviteCard.offsetWidth;
+
+            // [關鍵修正 3] 設定退場樣式
             inviteCard.style.opacity = '0';
             inviteCard.style.transform = 'scale(0.9) translateY(-20px)';
             
@@ -2798,7 +2805,7 @@
             // 4. 等待過渡後顯示 Kether
             setTimeout(() => {
                 selectLibraryFloor(libraryFloors[0]);
-            }, 700); // 時間稍微縮短配合淡出
+            }, 700); 
         }
 
         function selectLibraryFloor(floor) {
