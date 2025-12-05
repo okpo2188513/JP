@@ -822,63 +822,11 @@
             <!-- Sephirah / Departments Grid -->
             <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
                 <span class="w-2 h-8 bg-lobotomy-amber mr-4"></span>
-                SEPHIRAH & DEPARTMENTS
+                ORGANIZATIONAL STRUCTURE
             </h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
-                <!-- Asiyah -->
-                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
-                    <div class="text-xs text-lobotomy-amber mb-2 uppercase tracking-widest">Control Team</div>
-                    <h4 class="text-2xl text-white font-bold mb-1">Malkuth</h4>
-                    <p class="text-gray-500 text-xs mb-4">"I can do it. I will stand tall."</p>
-                    <div class="h-px w-full bg-gray-700 mb-4"></div>
-                    <p class="text-sm text-gray-400">控制部。負責指揮整個設施的基礎運作。Malkuth 總是充滿熱情，但也隱藏著自卑與急躁。</p>
-                </div>
-                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
-                    <div class="text-xs text-purple-400 mb-2 uppercase tracking-widest">Information Team</div>
-                    <h4 class="text-2xl text-white font-bold mb-1">Yesod</h4>
-                    <p class="text-gray-500 text-xs mb-4">"Discernment is key."</p>
-                    <div class="h-px w-full bg-gray-700 mb-4"></div>
-                    <p class="text-sm text-gray-400">情報部。負責處理與分析異想體的數據。Yesod 嚴謹而潔癖，極度厭惡不理性的行為。</p>
-                </div>
-                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
-                    <div class="text-xs text-orange-400 mb-2 uppercase tracking-widest">Training Team</div>
-                    <h4 class="text-2xl text-white font-bold mb-1">Hod</h4>
-                    <p class="text-gray-500 text-xs mb-4">"I just wanted to be a good person."</p>
-                    <div class="h-px w-full bg-gray-700 mb-4"></div>
-                    <p class="text-sm text-gray-400">培訓部。負責員工的教育與訓練。Hod 溫柔善良，但過去的錯誤讓她深受罪惡感折磨。</p>
-                </div>
-                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
-                    <div class="text-xs text-green-400 mb-2 uppercase tracking-widest">Safety Team</div>
-                    <h4 class="text-2xl text-white font-bold mb-1">Netzach</h4>
-                    <p class="text-gray-500 text-xs mb-4">"Do we really have to do this?"</p>
-                    <div class="h-px w-full bg-gray-700 mb-4"></div>
-                    <p class="text-sm text-gray-400">安保部。負責設施的安全維護。Netzach 依賴腦啡肽來逃避面對不斷死去的員工的痛苦。</p>
-                </div>
-                
-                <!-- Briah (Brief) -->
-                <div class="sephirah-card border border-yellow-700/50 bg-[#222] p-6 lg:col-span-2 relative overflow-hidden">
-                    <div class="absolute right-0 top-0 text-[100px] font-black text-gray-800 opacity-20 pointer-events-none -mr-4 -mt-4">BRIAH</div>
-                    <div class="text-xs text-yellow-500 mb-2 uppercase tracking-widest">Middle Layer</div>
-                    <h4 class="text-2xl text-white font-bold mb-4">Central Command, Disciplinary, Welfare</h4>
-                    <ul class="text-sm text-gray-400 space-y-2">
-                        <li><strong class="text-yellow-200">Tiphereth:</strong> 中央本部。一對雙胞胎，面對絕望仍試圖尋找意義。</li>
-                        <li><strong class="text-red-400">Gebura:</strong> 懲戒部。前身為傳奇收尾人 Kali，負責鎮壓異想體。</li>
-                        <li><strong class="text-blue-400">Chesed:</strong> 福利部。曾是富家少爺，試圖在殘酷體制中尋找人性。</li>
-                    </ul>
-                </div>
-
-                <!-- Atziluth (Brief) -->
-                <div class="sephirah-card border border-red-900/50 bg-[#222] p-6 lg:col-span-2 relative overflow-hidden">
-                    <div class="absolute right-0 top-0 text-[100px] font-black text-gray-800 opacity-20 pointer-events-none -mr-4 -mt-4">ATZILUTH</div>
-                    <div class="text-xs text-red-500 mb-2 uppercase tracking-widest">Lower Layer</div>
-                    <h4 class="text-2xl text-white font-bold mb-4">Extraction, Records, Architecture</h4>
-                    <ul class="text-sm text-gray-400 space-y-2">
-                        <li><strong class="text-gray-200">Binah:</strong> 研發部。前首腦調律者，掌握著提取異想體的核心秘密。</li>
-                        <li><strong class="text-gray-200">Hokma:</strong> 紀錄部。時間的管理者，也是 Ayin 最忠誠的追隨者。</li>
-                        <li><strong class="text-white">Kether:</strong> 構築部。所有故事的起點與終點。</li>
-                    </ul>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-24">
+                <div id="sephirah-grid-container" class="contents"></div>
             </div>
            <div class="mt-24 mb-24">
                 <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
@@ -1208,6 +1156,57 @@
                 </div>
 
             <div class="h-2 w-full" id="abno-level-footer-line"></div>
+        </div>
+    </div>
+    <div id="sephirah-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeSephirahModal()"></div>
+        
+        <div id="sephirah-modal-content" class="relative w-full max-w-5xl h-[80vh] bg-[#1a1a1a] border-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col md:flex-row overflow-hidden transition-all duration-300">
+            <button onclick="closeSephirahModal()" class="absolute top-4 right-4 z-50 text-gray-500 hover:text-white bg-black/50 rounded-full p-2 border border-gray-700">✕</button>
+            
+            <div class="w-full md:w-1/3 h-1/3 md:h-full relative bg-[#111] overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-800">
+                <div id="sephirah-bg-icon" class="absolute inset-0 flex items-center justify-center opacity-10 scale-150 text-white"></div>
+                
+                <div class="relative z-10 w-48 h-48 flex items-center justify-center">
+                    <div id="sephirah-main-icon" class="w-full h-full drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"></div>
+                </div>
+
+                <div id="sephirah-dept-vertical" class="absolute left-4 bottom-4 text-[100px] font-black text-white/5 font-cinzel select-none leading-none origin-bottom-left -rotate-90 hidden md:block">
+                    CONTROL
+                </div>
+            </div>
+
+            <div class="w-full md:w-2/3 h-2/3 md:h-full p-8 md:p-12 flex flex-col justify-center bg-[#1a1a1a] relative">
+                <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center space-x-3 mb-2">
+                         <span id="sephirah-dept-label" class="text-xs font-mono uppercase tracking-[0.2em] px-2 py-1 border rounded">Control Team</span>
+                         <span class="text-xs text-gray-600 font-mono">SEPHIRAH PROTOCOL</span>
+                    </div>
+                    
+                    <h2 id="sephirah-name" class="text-5xl md:text-6xl font-black text-white mb-6 font-cinzel tracking-wider">MALKUTH</h2>
+                    
+                    <div class="w-12 h-1 mb-8 transition-all duration-500" id="sephirah-accent-line"></div>
+                    
+                    <blockquote class="mb-8 border-l-2 border-gray-700 pl-6 italic text-gray-400 text-lg md:text-xl font-light leading-relaxed">
+                        "<span id="sephirah-quote" class="text-gray-300">I can do it. I will stand tall.</span>"
+                    </blockquote>
+                    
+                    <div class="space-y-4 text-sm md:text-base leading-loose text-justify text-gray-400 font-light">
+                        <p id="sephirah-desc">Description goes here.</p>
+                    </div>
+
+                    <div class="mt-12 pt-6 border-t border-gray-800 flex justify-between items-end">
+                         <div class="text-[10px] text-gray-600 font-mono">
+                             FILE: LOB_ARCHIVE_<span id="sephirah-file-id">01</span>
+                         </div>
+                         <div id="sephirah-status" class="text-xs font-bold font-mono animate-pulse">
+                             ACTIVE
+                         </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
