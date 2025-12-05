@@ -912,6 +912,51 @@
             </div>
         </div>
     </div>
+    <!-- VIEW3 : ruina library (Hidden Initially) -->
+    <div id="library-view" class="hidden opacity-0 transition-opacity duration-1000 ease-in-out min-h-screen bg-[#050510] text-white font-serif relative overflow-hidden">
+        
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a40] via-[#050510] to-[#000000] opacity-80"></div>
+            <div class="absolute top-0 left-0 w-full h-full opacity-30" style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');"></div>
+        </div>
+
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#ffd700] to-transparent z-20 opacity-50"></div>
+
+        <div class="relative z-10 container mx-auto px-6 h-screen flex flex-col items-center justify-center text-center">
+            
+            <div class="mb-12 animate-pulse">
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" stroke="#ffd700" stroke-width="1" class="drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">
+                    <rect x="20" y="15" width="60" height="70" />
+                    <path d="M20 15 L50 40 L80 15" />
+                    <path d="M50 50 L50 70" stroke-dasharray="2,2"/>
+                    <circle cx="50" cy="50" r="5" fill="#ffd700" />
+                </svg>
+            </div>
+
+            <h1 class="text-6xl md:text-8xl font-bold mb-4 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-[#ffd700] to-[#b8860b]" style="filter: drop-shadow(0 0 20px rgba(255,215,0,0.3));">
+                Library of Ruina
+            </h1>
+            
+            <h2 class="text-2xl md:text-3xl font-light tracking-[0.5em] mb-12 text-gray-400">
+                廢墟圖書館
+            </h2>
+
+            <div class="max-w-2xl mx-auto space-y-6 text-gray-300 leading-loose text-lg font-light italic">
+                <p>"願你在這裡找到你的書。"</p>
+                <p class="text-sm text-gray-500 not-italic font-mono">May you find your book in this place.</p>
+            </div>
+
+            <div class="mt-24">
+                <button onclick="returnToLobotomyFromLibrary()" class="px-8 py-3 border border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-all duration-500 tracking-widest font-bold text-sm uppercase group relative overflow-hidden">
+                    <span class="relative z-10">Return to Facility</span>
+                    <div class="absolute inset-0 bg-[#ffd700] transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                </button>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-1/4 w-px h-1/2 bg-gradient-to-t from-[#ffd700] to-transparent opacity-20"></div>
+        <div class="absolute bottom-0 right-1/4 w-px h-1/3 bg-gradient-to-t from-[#ffd700] to-transparent opacity-20"></div>
+    </div>
 
     <!-- ALL MODALS (Shared across both views for simplicity) -->
     
@@ -1416,7 +1461,10 @@
                             </p>
                             <p class="border border-red-900/50 p-4 bg-red-900/10 text-red-200">
                                 警告：檢測到即將發生的背叛行為。<br>
-                                目標：奪取光之種 -> 建立圖書館。
+                                目標：奪取光之種 -> 
+                                <span onclick="switchToLibraryView()" class="cursor-pointer text-white underline decoration-red-500 decoration-2 hover:text-red-500 hover:decoration-white transition-all font-bold" title="進入圖書館">
+                                    建立圖書館
+                                </span>。
                             </p>
                         </div>
                     </div>
@@ -2606,6 +2654,42 @@
             const layer1 = document.getElementById('angela-layer-1');
             layer1.style.display = 'block';
             setTimeout(() => layer1.style.opacity = '1', 50);
+        }
+        // ================= Library View Logic =================
+        const libraryView = document.getElementById('library-view');
+
+        function switchToLibraryView() {
+            // 1. 關閉當前的 Angela 視窗
+            closeAngelaModal();
+            
+            // 2. 淡出腦葉公司視圖
+            lobotomyView.style.opacity = '0';
+            
+            setTimeout(() => {
+                // 3. 切換隱藏狀態
+                lobotomyView.classList.add('hidden');
+                libraryView.classList.remove('hidden');
+                
+                // Trigger reflow (重繪)
+                void libraryView.offsetWidth;
+                
+                // 4. 淡入圖書館視圖
+                libraryView.style.opacity = '1';
+                window.scrollTo(0,0);
+            }, 1000); // 給予足夠的過場時間
+        }
+
+        function returnToLobotomyFromLibrary() {
+            libraryView.style.opacity = '0';
+            
+            setTimeout(() => {
+                libraryView.classList.add('hidden');
+                lobotomyView.classList.remove('hidden');
+                
+                void lobotomyView.offsetWidth;
+                lobotomyView.style.opacity = '1';
+                window.scrollTo(0,0);
+            }, 800);
         }
     </script>
 </body>
