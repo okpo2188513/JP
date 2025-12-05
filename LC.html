@@ -2778,6 +2778,8 @@
 
         function renderLibraryTree() {
             const container = document.getElementById('library-tree-container');
+            if(!container) return; // 安全檢查
+            
             container.innerHTML = '<div class="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ffd700]/30 to-transparent -translate-x-1/2"></div>'; 
 
             libraryFloors.forEach((floor, index) => {
@@ -2802,41 +2804,43 @@
                 `;
                 container.appendChild(node);
             });
+            
             const spacer = document.createElement('div');
             spacer.className = "h-24";
             container.appendChild(spacer);
         }
 
-        // 新增功能：展開圖書館 (從全螢幕 -> 左右分欄)
+        // 展開動畫 (點擊邀請函後觸發)
         function revealLibraryTree() {
             const leftPanel = document.getElementById('library-left-panel');
             const rightPanel = document.getElementById('library-right-panel');
             const inviteCard = document.getElementById('invitation-card');
 
-            // 1. 左側面板展開
+            // 左側展開
             leftPanel.classList.remove('w-0', 'opacity-0');
             leftPanel.classList.add('w-full', 'md:w-1/3', 'lg:w-1/4', 'opacity-100');
-            leftPanel.style.borderRightColor = 'rgba(255, 215, 0, 0.2)'; // 顯示邊框
+            leftPanel.style.borderRightColor = 'rgba(255, 215, 0, 0.2)'; 
 
-            // 2. 右側面板縮小
+            // 右側調整
             rightPanel.classList.remove('w-full');
             rightPanel.classList.add('w-full', 'md:w-2/3', 'lg:w-3/4');
 
-            // 3. 隱藏邀請函 (淡出)
+            // 邀請函淡出
             inviteCard.style.opacity = '0';
             inviteCard.style.transform = 'translateY(-20px)';
             
-            // 4. 自動選擇 Kether 層作為開始 (延遲執行，等面板展開後)
+            // 自動進入第一層
             setTimeout(() => {
-                selectLibraryFloor(libraryFloors[0]); // 選擇 Roland
+                selectLibraryFloor(libraryFloors[0]); 
             }, 800);
         }
 
+        // 選擇樓層顯示
         function selectLibraryFloor(floor) {
             const stageContent = document.getElementById('library-stage-content');
             const stageBg = document.getElementById('library-stage-bg');
             
-            // 更新選中狀態
+            // 更新左側選中狀態
             libraryFloors.forEach(f => {
                 const indicator = document.getElementById(`indicator-${f.id}`);
                 if (indicator) {
@@ -2847,6 +2851,7 @@
                 }
             });
 
+            // 切換內容
             stageContent.style.opacity = '0';
             stageContent.style.transform = 'translateY(10px)';
             stageBg.style.transform = 'scale(1.1)';
@@ -2895,32 +2900,32 @@
             }, 400);
         }
 
-        // 修改切換邏輯：每次進入都重置為「歡迎狀態」
+        // 關鍵修改：強制重置為邀請函狀態的切換函數
         switchToLibraryView = function() {
             closeAngelaModal();
             lobotomyView.style.opacity = '0';
             
             setTimeout(() => {
                 lobotomyView.classList.add('hidden');
-                document.getElementById('library-view').classList.remove('hidden');
+                const libraryView = document.getElementById('library-view');
+                libraryView.classList.remove('hidden');
                 
-                // 重置版面狀態 (收起左側，顯示全螢幕右側)
+                // 1. 強制重置左側面板 (隱藏)
                 const leftPanel = document.getElementById('library-left-panel');
-                const rightPanel = document.getElementById('library-right-panel');
-                
                 leftPanel.classList.remove('w-full', 'md:w-1/3', 'lg:w-1/4', 'opacity-100');
                 leftPanel.classList.add('w-0', 'opacity-0');
                 leftPanel.style.borderRightColor = 'transparent';
 
+                // 2. 強制重置右側面板 (全螢幕)
+                const rightPanel = document.getElementById('library-right-panel');
                 rightPanel.classList.remove('w-full', 'md:w-2/3', 'lg:w-3/4');
                 rightPanel.classList.add('w-full');
 
-                // 重置邀請函卡片 (恢復顯示)
-                // 注意：這裡我們需要重新插入邀請函的 HTML，因為之前被 selectLibraryFloor 覆蓋了
-                // 最簡單的方式是重新整理頁面，或者在這裡重新寫入 innerHTML。
-                // 為了流暢，我們這裡用 "簡單重繪" 的方式。
-                
-                document.getElementById('library-stage-content').innerHTML = `
+                // 3. 強制重寫右側內容為「邀請函」 (這步最重要！)
+                const stageContent = document.getElementById('library-stage-content');
+                stageContent.style.opacity = '1';
+                stageContent.style.transform = 'none';
+                stageContent.innerHTML = `
                     <div id="invitation-card" class="animate-slide-up cursor-pointer group" onclick="revealLibraryTree()">
                         <div class="mb-8 flex justify-center relative transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                             <div class="absolute inset-0 bg-[#ffd700] blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
@@ -2943,41 +2948,16 @@
                     </div>
                 `;
 
-                // 渲染左側樹 (準備好但隱藏)
-                renderLibraryTree();
-                
-                void document.getElementById('library-view').offsetWidth;
-                document.getElementById('library-view').style.opacity = '1';
-                window.scrollTo(0,0);
-            }, 1000);
-        }
-        
-        function returnToLobotomyFromLibrary() {
-            const libraryView = document.getElementById('library-view');
-            libraryView.style.opacity = '0';
-            setTimeout(() => {
-                libraryView.classList.add('hidden');
-                lobotomyView.classList.remove('hidden');
-                void lobotomyView.offsetWidth;
-                lobotomyView.style.opacity = '1';
-                window.scrollTo(0,0);
-            }, 800);
-        }
+                // 4. 背景重置
+                const stageBg = document.getElementById('library-stage-bg');
+                stageBg.style.transform = 'scale(1)';
+                stageBg.style.filter = 'grayscale(100%) opacity(0.3)';
 
-        // 修改切換邏輯：加入渲染樹的步驟，但不自動選擇樓層 (保持歡迎頁面)
-        switchToLibraryView = function() {
-            closeAngelaModal();
-            lobotomyView.style.opacity = '0';
-            
-            setTimeout(() => {
-                lobotomyView.classList.add('hidden');
-                document.getElementById('library-view').classList.remove('hidden');
-                
-                // 渲染左側樹狀導航 (但不觸發 selectLibraryFloor)
+                // 5. 渲染左側樹 (雖然隱藏但先準備好)
                 renderLibraryTree();
                 
-                void document.getElementById('library-view').offsetWidth;
-                document.getElementById('library-view').style.opacity = '1';
+                void libraryView.offsetWidth;
+                libraryView.style.opacity = '1';
                 window.scrollTo(0,0);
             }, 1000);
         }
