@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limbus Company | 邊獄公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Cinzel:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        limbus: {
+                            red: '#b91c1c',
+                            dark: '#0a0a0a',
+                            gray: '#1f1f1f'
+                        },
+                        lobotomy: {
+                            bg: '#1a1a1a',
+                            amber: '#f59e0b',
+                            text: '#d4d4d4'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        mono: ['Share Tech Mono', 'monospace'],
+                    },
+                    animation: {
+                        'blink': 'blink 1s step-end infinite',
+                        'scan': 'scan 8s linear infinite',
+                        'spin-slow': 'spin 60s linear infinite',
+                    },
+                    keyframes: {
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0' },
+                        },
+                        scan: {
+                            '0%': { backgroundPosition: '0 0' },
+                            '100%': { backgroundPosition: '0 100%' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 全域樣式 */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #050505;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        /* CRT 掃描線效果 */
+        .scanline {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            z-index: 50;
+        }
+
+        /* 腦葉公司終端樣式 */
+        .lobotomy-grid-bg {
+            background-image: 
+                linear-gradient(rgba(245, 158, 11, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 158, 11, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .sephirah-card {
+            transition: all 0.3s ease;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .sephirah-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+            border-color: #f59e0b;
+        }
+
+        /* 罪人卡片 */
+        .sinner-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #0f0f0f;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid var(--sinner-color);
+            cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .sinner-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--sinner-color), transparent);
+            opacity: 0.1;
+            transition: 0.5s;
+            z-index: 5;
+            pointer-events: none;
+        }
+        .sinner-card:hover::before {
+            left: 100%;
+        }
+        .sinner-card:hover {
+            border-color: var(--sinner-color);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 0 30px -5px rgba(0,0,0,0.9), 0 0 15px -2px var(--sinner-color);
+        }
+
+        /* 圖片容器 */
+        .sinner-img-wrapper {
+            position: relative;
+            height: 300px;
+            overflow: hidden;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* SVG 背景圖標 */
+        .sinner-icon {
+            width: 70%;
+            height: 70%;
+            fill: none;
+            stroke: var(--sinner-color);
+            stroke-width: 1.5;
+            opacity: 0.8;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 0 5px var(--sinner-color));
+        }
+        .sinner-card:hover .sinner-icon {
+            opacity: 1;
+            transform: scale(1.1);
+            fill: var(--sinner-color);
+            fill-opacity: 0.1;
+        }
+
+        /* 數字編號 */
+        .sinner-num {
+            font-family: 'Cinzel', serif;
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 4rem;
+            line-height: 1;
+            font-weight: 900;
+            color: var(--sinner-color);
+            opacity: 0.3;
+            z-index: 2;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 20px var(--sinner-color);
+        }
+        .sinner-card:hover .sinner-num {
+            opacity: 0.8;
+            transform: scale(1.05) translateX(5px);
+        }
+        
+        /* 裝飾線 */
+        .sinner-accent-line {
+            background-color: var(--sinner-color);
+            box-shadow: 0 0 8px var(--sinner-color);
+            height: 2px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .sinner-name-en {
+            color: var(--sinner-color);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+
+        /* Glitch Text */
+        .glitch {
+            position: relative;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(38px, 9999px, 84px, 0); }
+            20% { clip: rect(8px, 9999px, 12px, 0); }
+            40% { clip: rect(68px, 9999px, 5px, 0); }
+            60% { clip: rect(13px, 9999px, 92px, 0); }
+            80% { clip: rect(88px, 9999px, 18px, 0); }
+            100% { clip: rect(2px, 9999px, 46px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            20% { clip: rect(12px, 9999px, 6px, 0); }
+            40% { clip: rect(2px, 9999px, 85px, 0); }
+            60% { clip: rect(44px, 9999px, 2px, 0); }
+            80% { clip: rect(98px, 9999px, 33px, 0); }
+            100% { clip: rect(32px, 9999px, 14px, 0); }
+        }
+
+        /* Common Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(4px);
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* Sinner Modal Content */
+        #sinner-modal-content, #sancho-modal-content {
+            transform: translateY(50px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active #sinner-modal-content,
+        .modal-overlay.active #sancho-modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        /* Info Modal Content */
+        .info-modal-content {
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid #333;
+            box-shadow: 0 0 50px rgba(185, 28, 28, 0.2);
+        }
+        .modal-overlay.active .info-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Modal Background SVG Animation */
+        .modal-bg-svg {
+            position: absolute;
+            right: -10%;
+            bottom: -20%;
+            width: 80%;
+            height: 80%;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+            animation: rotateSlow 60s linear infinite;
+        }
+        @keyframes rotateSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Corp Grid Button */
+        .corp-btn {
+            aspect-ratio: 1;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            color: #555;
+            transition: all 0.2s ease;
+            background: #0a0a0a;
+            position: relative;
+            overflow: hidden;
+        }
+        .corp-btn:hover {
+            border-color: #ef4444;
+            color: white;
+            background: #111;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+            text-shadow: 0 0 5px red;
+        }
+        .corp-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ef4444;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .corp-btn:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Assoc Grid Button */
+        .assoc-btn {
+            height: 100px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .assoc-btn:hover {
+            background: #12100b;
+        }
+        .assoc-num {
+            font-size: 2rem;
+            font-family: 'Cinzel', serif;
+            color: #333;
+            transition: color 0.3s;
+        }
+        .assoc-name {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            margin-top: 0.5rem;
+            transition: color 0.3s;
+        }
+        
+        /* Justify Text Helper */
+        .text-justify {
+            text-align: justify;
+            text-justify: inter-ideograph;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanline"></div>
+
+    <!-- VIEW 1: LIMBUS COMPANY (Default) -->
+    <div id="limbus-view" class="transition-opacity duration-1000 ease-in-out opacity-100">
+        
+        <!-- 導航欄 -->
+        <nav class="fixed w-full z-40 bg-black/90 border-b border-red-900/50 backdrop-blur-md">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                        <span class="font-cinzel font-bold text-white text-lg">LC</span>
+                    </div>
+                    <span class="text-xl font-bold tracking-[0.2em] text-white font-cinzel">LIMBUS COMPANY</span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-xs font-bold tracking-widest text-gray-400">
+                    <a href="#about" class="hover:text-red-500 transition-colors uppercase">Introduction</a>
+                    <a href="#sinners" class="hover:text-red-500 transition-colors uppercase">Sinners</a>
+                    <a href="#city-intro" class="hover:text-red-500 transition-colors uppercase">The City</a>
+                    <a href="#fixers" class="hover:text-red-500 transition-colors uppercase">Fixers</a>
+                    <a href="#backstreets" class="hover:text-red-500 transition-colors uppercase">Backstreets</a>
+                    <a href="#background" class="hover:text-red-500 transition-colors uppercase">Background</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Header / Hero -->
+        <header id="about" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-12 scroll-mt-28">
+            <div class="absolute inset-0">
+                 <!-- 背景圖 -->
+                <div class="w-full h-full bg-[url('https://images.unsplash.com/photo-1620644780185-3f690714a275?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-30 grayscale contrast-125"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent"></div>
+            </div>
+
+            <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+                <p class="text-red-600 tracking-[0.5em] text-sm mb-6 font-bold uppercase animate-pulse">Face the Sin, Save the E.G.O</p>
+                <h1 class="text-6xl md:text-9xl font-black text-white mb-4 font-cinzel glitch" data-text="LIMBUS">
+                    LIMBUS
+                </h1>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-12 font-cinzel tracking-widest">
+                    COMPANY
+                </h2>
+                
+                <!-- 背景故事區塊 -->
+                <div class="bg-black/60 backdrop-blur-sm p-8 mb-12 text-justify space-y-6 shadow-2xl transform transition-all hover:bg-black/70 rounded-sm border border-white/5">
+                    <p class="text-gray-300 text-sm md:text-base leading-loose font-light">
+                        隨著旨在治癒人類心靈的
+                        <span onclick="openLoreModal('seed')" class="text-yellow-100 hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.8)] hover:underline font-bold cursor-pointer transition-all inline-block duration-300" title="點擊查看詳細資料">「光之種計畫 (Seed of Light)」</span>
+                        以未竟的結局告終，
+                        <span onclick="openLoreModal('lobotomy')" class="text-red-400 hover:text-red-300 hover:underline cursor-pointer transition-colors font-bold" title="點擊進入腦葉公司檔案終端">「腦葉公司 (Lobotomy Corp)」</span>
+                        也隨之崩塌。
+                        未萌發的光芒化為了<span class="text-yellow-500 font-bold">「金枝 (Golden Bough)」</span>，散落在都市的各個角落，引發了無數的異變與共鳴。
+                    </p>
+                    <p class="text-gray-300 text-sm md:text-base leading-loose font-light">
+                        <strong class="text-red-500">Limbus Company</strong> 為了回收這些危險而珍貴的金枝，派遣了失去記憶的經理「但丁」，以及十二名無法融入都市常規、各自揹負著罪孽的「罪人」。
+                    </p>
+                    <p class="text-gray-300 text-sm md:text-base leading-loose font-light">
+                        搭乘著以人類為燃料的巴士<strong class="text-red-500">「梅菲斯特」</strong>，穿梭於戒備森嚴的巢與無法無天的後巷之間。這是一趟無法回頭的旅程，目標只有一個——直面罪惡，拯救自我。
+                    </p>
+                </div>
+
+                <a href="#sinners" class="inline-block border border-red-600 text-red-500 px-8 py-3 hover:bg-red-700 hover:text-white transition-all duration-300 uppercase tracking-widest text-sm font-bold group relative overflow-hidden">
+                    <span class="relative z-10">檢視罪人檔案</span>
+                    <div class="absolute inset-0 bg-red-900/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                </a>
+            </div>
+        </header>
+
+        <!-- Sinners Section -->
+        <section id="sinners" class="pt-12 pb-24 bg-[#050505] relative scroll-mt-20">
+            <div class="container mx-auto px-6">
+                <div class="mb-16 border-l-4 border-red-700 pl-6">
+                    <h2 class="text-4xl font-bold text-white mb-2">罪人檔案</h2>
+                    <p class="text-gray-500 uppercase tracking-widest font-cinzel">Sinner Character Files</p>
+                </div>
+
+                <div id="sinners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    <!-- Javascript 將會動態生成這些卡片 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- City Intro Section -->
+        <section id="city-intro" class="py-24 bg-[#0a0a0a] border-t border-red-900/30 relative overflow-hidden scroll-mt-20">
+            <!-- 背景裝飾網格 -->
+            <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                     <defs>
+                        <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+                        </pattern>
+                     </defs>
+                     <rect width="100" height="100" fill="url(#smallGrid)" />
+                     <path d="M0,0 L100,100 M100,0 L0,100" stroke="white" stroke-width="0.2"/>
+                 </svg>
+            </div>
+
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="mb-16 text-center">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 font-cinzel">THE CITY</h2>
+                    <p class="text-red-600 font-bold tracking-[0.5em] text-sm uppercase">都市簡介</p>
+                    <div class="w-20 h-1 bg-red-700 mx-auto mt-6"></div>
+                </div>
+
+                <!-- Intro Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center mb-20">
+                    <!-- 文字介紹 -->
+                    <div class="space-y-8 text-gray-400 leading-loose text-sm md:text-base text-justify">
+                        <p class="first-letter:text-5xl first-letter:font-bold first-letter:text-white first-letter:mr-3 float-left">這</p>
+                        <p>
+                            個世界被稱為「都市」。它由 26 個巢（Nest）組成，每個巢都由被稱為<strong class="text-white">「翼（Wing）」</strong>的巨型企業統治。這些企業掌握著名為「奇點」的超越技術，支配著各自區域的一切。
+                        </p>
+                        <p>
+                            在巢的繁華陰影下，是混亂無序的<span class="text-red-500 font-bold">後巷（Backstreets）</span>。這裡是收尾人、幫派與各種異端技術的溫床。沒有法律，只有弱肉強食的生存法則，以及首腦制定的絕對禁忌。
+                        </p>
+                    </div>
+                    
+                    <!-- 視覺化地圖概念 SVG -->
+                    <div class="relative h-80 border border-gray-800 bg-[#050505] p-4 flex items-center justify-center group hover:border-red-900 transition-colors duration-500 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+                        <svg class="w-full h-full" viewBox="0 0 200 200">
+                            <defs>
+                                <pattern id="mapGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#222" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#mapGrid)" />
+                            <g class="group-hover:animate-pulse">
+                                <circle cx="100" cy="100" r="20" fill="none" stroke="white" stroke-width="1"/>
+                                <circle cx="100" cy="100" r="2" fill="white"/>
+                                <path d="M100,80 L100,70 M100,120 L100,130 M80,100 L70,100 M120,100 L130,100" stroke="white" stroke-width="1"/>
+                            </g>
+                            <text x="100" y="145" font-size="6" fill="#666" text-anchor="middle" font-family="Cinzel" letter-spacing="1">A CORP</text>
+                            <circle cx="100" cy="100" r="60" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="5,5"/>
+                            <circle cx="100" cy="100" r="85" fill="none" stroke="#333" stroke-width="0.5" stroke-dasharray="10,10"/>
+                        </svg>
+                        <div class="absolute bottom-4 right-4 text-right">
+                            <div class="text-[10px] text-gray-600 font-mono">SYSTEM: THE HEAD</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Nest Section -->
+                <div id="the-nest" class="mb-24 pt-10 border-t border-gray-800">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-2 font-cinzel tracking-tighter">THE <span class="text-cyan-500">NEST</span></h2>
+                        <p class="text-gray-400 mt-4 max-w-2xl mx-auto text-sm leading-relaxed">
+                            被「翼」的羽翼所庇護的絕對安全區。這裡是都市繁榮的象徵，居住著被稱為「羽毛」的特權階級。
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                        <!-- Nest Features -->
+                        <div class="bg-[#0f1112] border border-gray-800 p-8 text-center group hover:border-cyan-500/50 transition-all duration-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-cyan-900/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="text-cyan-600 mb-4 flex justify-center relative z-10">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                            </div>
+                            <h4 class="text-white font-cinzel font-bold mb-3 text-lg relative z-10">Absolute Safety</h4>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">巢內受到「巢之翼」與「禁忌獵人」的嚴密保護。與後巷不同，這裡沒有隨機的暴力——除非你違反了合約。</p>
+                        </div>
+                        <div class="bg-[#0f1112] border border-gray-800 p-8 text-center group hover:border-cyan-500/50 transition-all duration-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-cyan-900/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="text-cyan-600 mb-4 flex justify-center relative z-10">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                            </div>
+                            <h4 class="text-white font-cinzel font-bold mb-3 text-lg relative z-10">Singularity</h4>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">每個巢都享有該區域「翼」所持有的「奇點」技術帶來的便利。空間移動、瞬間治療、時光倒流——在這裡都是日常商品。</p>
+                        </div>
+                        <div class="bg-[#0f1112] border border-gray-800 p-8 text-center group hover:border-cyan-500/50 transition-all duration-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-cyan-900/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="text-cyan-600 mb-4 flex justify-center relative z-10">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.2 7.8l-7.7 7.7a4 4 0 0 1-5.7-5.7l7.7-7.7a6 6 0 0 1 8.5 8.5z"/><path d="M10.5 14.5L3 22"/></svg>
+                            </div>
+                            <h4 class="text-white font-cinzel font-bold mb-3 text-lg relative z-10">The Feather</h4>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">巢的居民被稱為「羽毛」。雖然生活富足，但如果失去了翼的庇護，就會瞬間墮落至後巷，甚至比原本的後巷人更悲慘。</p>
+                        </div>
+                    </div>
+
+                    <!-- The 26 Wings Grid -->
+                    <div class="mb-12">
+                        <h3 class="text-2xl font-bold text-white mb-8 font-cinzel text-center"><span class="text-cyan-600">WINGS</span> OF THE CITY</h3>
+                        <p class="text-center text-gray-500 text-xs mb-8 font-mono">SELECT A CORPORATION TO ACCESS DATA</p>
+                        <div class="grid grid-cols-4 md:grid-cols-7 gap-2 md:gap-4 max-w-4xl mx-auto" id="corp-grid">
+                            <!-- JS Will Populate This -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Fixers Section -->
+                <div id="fixers" class="mb-24 pt-10 border-t border-yellow-900/30 scroll-mt-20">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-2 font-cinzel tracking-tighter">THE <span class="text-yellow-600">FIXERS</span></h2>
+                        <p class="text-gray-400 mt-4 max-w-2xl mx-auto text-sm leading-relaxed">
+                            都市的自由傭兵與解決師。只要支付相應的報酬，他們無所不作。從尋找走失寵物到暗殺翼的理事，一切皆有價格。
+                        </p>
+                    </div>
+
+                    <div class="max-w-5xl mx-auto">
+                        <h3 class="text-2xl font-bold text-white mb-8 font-cinzel text-center">THE 12 <span class="text-yellow-600">ASSOCIATIONS</span></h3>
+                        <p class="text-center text-gray-500 text-xs mb-8 font-mono">MANAGED BY THE HANA ASSOCIATION</p>
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4" id="assoc-grid">
+                            <!-- JS Will Populate This -->
+                        </div>
+                    </div>
+
+                    <!-- Fixer Grades Section -->
+                    <div class="mt-20 max-w-5xl mx-auto text-center">
+                        <h3 class="text-xl font-bold text-white mb-6 font-cinzel">FIXER <span class="text-gray-500">GRADING SYSTEM</span></h3>
+                        <p class="text-gray-500 text-xs mb-8 font-mono">FROM STREET RAT TO LEGEND</p>
+                        
+                        <!-- 9 to 1 Interactive Grid -->
+                        <div class="grid grid-cols-3 gap-3 md:gap-4 mb-12 px-4" id="grade-grid">
+                            <!-- JS Will Populate This -->
+                        </div>
+
+                        <!-- Colors & Offices Info -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+                            <!-- Colors Card -->
+                            <div class="p-6 border border-red-900/30 bg-[#0f0f0f] relative overflow-hidden group hover:border-red-600 transition-all duration-500 shadow-[0_0_30px_rgba(220,38,38,0.1)]">
+                                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-red-900/20 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                <div class="text-red-600 text-xs uppercase tracking-[0.2em] mb-2 font-bold relative z-10">The Zenith</div>
+                                <h4 class="text-white font-bold font-cinzel text-4xl mb-4 group-hover:scale-105 transition-transform relative z-10 text-shadow-red">Colors</h4>
+                                <div class="text-sm text-gray-400 mb-6 leading-relaxed relative z-10 font-light">
+                                    超越 1 階的存在。被賦予「顏色」稱號的都市傳說。他們本身就是移動的災難或奇蹟。
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 relative z-10" id="color-list-grid"></div>
+                            </div>
+                            
+                            <!-- Offices Card -->
+                            <div class="p-6 border border-gray-800 bg-[#0f0f0f] group hover:border-white transition-all duration-300 relative overflow-hidden">
+                                <div class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-2 font-bold relative z-10">Organization</div>
+                                <h4 class="text-white font-bold font-cinzel text-3xl mb-2 relative z-10">Offices</h4>
+                                <div class="text-sm text-gray-400 mt-4 leading-relaxed relative z-10 font-light">
+                                    收尾人組成的私人事務所。從只有一人的街頭事務所，到擁有數百人的大型事務所，規模與實力參差不齊，是都市運作的基礎單位。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- The Backstreets Section -->
+                <div id="backstreets" class="relative border-t-2 border-dashed border-gray-800 pt-20 scroll-mt-20 mb-24">
+                    <div class="absolute top-[-12px] left-1/2 transform -translate-x-1/2 bg-[#0a0a0a] px-6 flex items-center space-x-2 text-yellow-600 font-mono text-xs tracking-widest border border-yellow-900/30 py-1">
+                        <span>WARNING: ENTERING LAWLESS ZONE</span>
+                    </div>
+
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-2 font-cinzel tracking-tighter">THE <span class="text-gray-700 line-through decoration-red-600 decoration-4">NEST</span> <span class="text-red-600">BACKSTREETS</span></h2>
+                        <p class="text-gray-500 mt-4 max-w-2xl mx-auto text-sm leading-relaxed">
+                            巢的陰影之下，是都市真正的血管。在這裡，唯一的法律就是生存。
+                        </p>
+                    </div>
+
+                    <div class="bg-red-950/10 border-l-4 border-red-700 p-6 mb-16 max-w-3xl mx-auto">
+                        <div class="flex items-start">
+                            <div class="text-red-600 mr-4 text-2xl">⚠</div>
+                            <div>
+                                <h4 class="text-red-500 font-bold mb-2 font-cinzel">後巷深宵 (THE NIGHT)</h4>
+                                <p class="text-gray-400 text-sm">
+                                    每日凌晨 <span class="text-red-400 font-mono">03:13 - 04:34</span>。在此期間，後巷將被「清道夫」淹沒。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-10 font-cinzel text-center">HAND OF THE CITY: <span class="text-gray-400">THE FIVE FINGERS</span></h3>
+                    <p class="text-center text-gray-500 text-xs mb-8 font-mono">SELECT A SYNDICATE TO VIEW INTEL</p>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl mx-auto px-4" id="finger-grid"></div>
+                </div>
+
+                <!-- The Background Section -->
+                <div id="background" class="relative border-t border-gray-800 pt-20 pb-24 scroll-mt-20">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-2 font-cinzel tracking-tighter">THE <span class="text-purple-500">BACKGROUND</span></h2>
+                        <p class="text-gray-500 mt-4 max-w-2xl mx-auto text-sm leading-relaxed">
+                            人類心靈的具象化，都市中潛藏的奇蹟與災難。
+                        </p>
+                    </div>
+
+                    <!-- Origin Block: White Nights & Dark Days -->
+                    <div class="max-w-7xl mx-auto px-4 mb-12">
+                        <div class="relative w-full h-32 md:h-48 border border-gray-600 overflow-hidden group select-none shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                            <!-- Background: Gradient from Light to Dark -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-[#e5e5e5] via-[#52525b] to-[#09090b]"></div>
+                            
+                            <!-- Animation Overlay -->
+                            <div class="absolute inset-0 opacity-10">
+                                <svg class="w-full h-full" preserveAspectRatio="none">
+                                    <pattern id="noise" width="100" height="100" patternUnits="userSpaceOnUse">
+                                        <path d="M0 100 L100 0" stroke="black" stroke-width="0.5"/>
+                                        <path d="M0 0 L100 100" stroke="white" stroke-width="0.5"/>
+                                    </pattern>
+                                    <rect width="100%" height="100%" fill="url(#noise)" />
+                                </svg>
+                            </div>
+
+                            <!-- Center Content -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center z-20 text-white px-4">
+                                <h3 class="text-3xl md:text-6xl font-black font-cinzel tracking-widest mb-2 text-center">
+                                    <span class="text-transparent bg-clip-text bg-gradient-to-b from-gray-800 to-black" style="filter: drop-shadow(0 0 1px rgba(255,255,255,0.8));">WHITE</span> 
+                                    <span style="text-shadow: 0 0 10px rgba(0,0,0,0.8);">NIGHTS</span> 
+                                    <span class="text-base md:text-2xl align-middle mx-2 font-mono text-red-500 font-bold" style="text-shadow: 0 0 5px rgba(0,0,0,1);">&</span> 
+                                    <span class="text-white" style="text-shadow: 0 0 15px rgba(255,255,255,1), 0 0 30px rgba(255,255,255,0.8);">DARK</span> 
+                                    <span style="text-shadow: 0 0 10px rgba(0,0,0,0.8);">DAYS</span>
+                                </h3>
+                                <div class="flex items-center space-x-4 mt-2">
+                                    <div class="h-px w-8 md:w-16 bg-white shadow-[0_0_5px_black]"></div>
+                                    <p class="text-[10px] md:text-xs font-mono tracking-[0.5em] uppercase font-bold text-white drop-shadow-md">The Origin of Phenomena // 白夜黑晝</p>
+                                    <div class="h-px w-8 md:w-16 bg-white shadow-[0_0_5px_black]"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Decorative Elements -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1/2 bg-white/5 transform -skew-x-12 origin-bottom-left"></div>
+                            <div class="absolute right-0 top-0 bottom-0 w-1/4 bg-black/20 transform skew-x-12 origin-top-right"></div>
+                        </div>
+                        <p class="text-center text-gray-400 text-sm mt-4 font-mono tracking-widest cursor-pointer hover:text-white hover:underline hover:shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-300 inline-block w-full" onclick="openLoreModal('whitenight')" title="點擊查看詳細資料">
+                            持續了七天七夜的光芒與黑暗，播撒了改變都市的種子。
+                        </p>
+                    </div>
+
+                    <!-- Phenomena Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto px-4">
+                        <!-- E.G.O Card -->
+                        <div onclick="openPhenomenaModal('ego')" class="bg-[#0f1112] border border-gray-800 p-8 text-center group hover:border-cyan-500 transition-all duration-500 relative overflow-hidden cursor-pointer flex flex-col items-center">
+                            <div class="absolute inset-0 bg-gradient-to-b from-cyan-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="text-white mb-4 relative z-10 transform group-hover:scale-110 transition-transform duration-500 w-20 h-20">
+                                <div id="ego-icon-container" class="w-full h-full"></div>
+                            </div>
+                            <h4 class="text-3xl text-white font-cinzel font-bold mb-2 relative z-10">E.G.O</h4>
+                            <div class="text-[10px] text-cyan-500 font-mono tracking-widest mb-4">EXTERMINATION OF GEOMETRICAL ORGAN</div>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">
+                                「神備」。拒絕聲音的誘惑，堅持自我信念所具象化的武裝。
+                            </p>
+                            <div class="mt-auto text-[10px] text-gray-500 border-t border-gray-800 pt-4 w-full group-hover:text-cyan-400 transition-colors">
+                                CLICK FOR DETAILS
+                            </div>
+                        </div>
+
+                        <!-- Carmen Card -->
+                        <div onclick="openPhenomenaModal('carmen')" class="bg-[#0f1112] border border-gray-800 p-8 text-center group transition-all duration-500 relative overflow-hidden cursor-pointer flex flex-col items-center order-first md:order-none"
+                             onmouseenter="this.style.borderImage='linear-gradient(to right, #06b6d4, #a855f7) 1'"
+                             onmouseleave="this.style.borderImage='none'">
+                            
+                            <div class="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-transparent to-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="text-white mb-4 relative z-10 transform group-hover:scale-110 transition-transform duration-500 w-20 h-20">
+                                 <div id="carmen-icon-container" class="w-full h-full"></div>
+                            </div>
+                            <h4 class="text-3xl text-white font-cinzel font-bold mb-2 relative z-10 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-purple-400 transition-colors">CARMEN</h4>
+                            <div class="text-[10px] text-gray-400 font-mono tracking-widest mb-4">THE VOICE</div>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">
+                                「聲音」。一切的源頭。當人陷入極度的絕望時，她會出現並給予溫柔的低語。
+                            </p>
+                            <div class="mt-auto text-[10px] text-gray-500 border-t border-gray-800 pt-4 w-full group-hover:text-gray-300 transition-colors">
+                                CLICK FOR DETAILS
+                            </div>
+                        </div>
+
+                        <!-- Distortion Card -->
+                        <div onclick="openPhenomenaModal('distortion')" class="bg-[#0f1112] border border-gray-800 p-8 text-center group hover:border-purple-500 transition-all duration-500 relative overflow-hidden cursor-pointer flex flex-col items-center">
+                            <div class="absolute inset-0 bg-gradient-to-b from-purple-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                             <div class="text-white mb-4 relative z-10 transform group-hover:scale-110 transition-transform duration-500 w-20 h-20">
+                                 <div id="distortion-icon-container" class="w-full h-full"></div>
+                            </div>
+                            <h4 class="text-3xl text-white font-cinzel font-bold mb-2 relative z-10 group-hover:text-purple-400 transition-colors">DISTORTION</h4>
+                            <div class="text-[10px] text-purple-600 font-mono tracking-widest mb-4">THE PHENOMENON</div>
+                            <p class="text-xs text-gray-400 relative z-10 leading-relaxed">
+                                「扭曲」。接受了聲音的誘惑，被慾望吞噬後產生的肉體異變。
+                            </p>
+                            <div class="mt-auto text-[10px] text-gray-500 border-t border-gray-800 pt-4 w-full group-hover:text-purple-400 transition-colors">
+                                CLICK FOR DETAILS
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-black py-12 border-t border-gray-900 text-center relative z-20">
+            <div class="container mx-auto px-6">
+                <div class="text-red-700 font-cinzel text-2xl font-bold mb-4 tracking-widest">LIMBUS COMPANY</div>
+                <p class="text-gray-500 text-sm mb-8">© Project Moon</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- VIEW 2: LOBOTOMY CORPORATION (Hidden Initially) -->
+    <div id="lobotomy-view" class="hidden opacity-0 transition-opacity duration-1000 ease-in-out min-h-screen bg-[#1a1a1a] text-[#d4d4d4] font-mono lobotomy-grid-bg relative">
+        <!-- Scanline Overlay specific for this view -->
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-50 pointer-events-none bg-[length:100%_4px,3px_100%]"></div>
+        
+        <!-- Top Bar -->
+        <div class="border-b-2 border-lobotomy-amber p-4 flex justify-between items-center bg-[#111] sticky top-0 z-40">
+            <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 border-2 border-lobotomy-amber flex items-center justify-center rounded-full animate-pulse">
+                    <span class="text-lobotomy-amber font-bold">L</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-lobotomy-amber tracking-widest font-cinzel">LOBOTOMY CORPORATION</h1>
+                    <p class="text-[10px] text-gray-500 tracking-[0.3em]">FACILITY MANAGEMENT TERMINAL</p>
+                </div>
+            </div>
+            <div class="text-right hidden md:block">
+                <div class="text-xs text-lobotomy-amber">DAY: 50</div>
+                <div class="text-xs text-red-500 animate-pulse">QLIPHOTH DETERRENCE: ACTIVE</div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-6 py-12 relative z-30">
+            <!-- Hero -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+                <div class="lg:col-span-2 space-y-6">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 border-l-4 border-lobotomy-amber pl-6">
+                        "FACE THE FEAR, <br><span class="text-lobotomy-amber">BUILD THE FUTURE.</span>"
+                    </h2>
+                    <p class="text-gray-400 leading-relaxed text-justify border border-gray-700 p-6 bg-[#0f0f0f]">
+                        腦葉公司是一家致力於開發新能源的公司。我們利用從「異想體 (Abnormalities)」中提取的腦啡肽 (Enkephalin)，為都市提供清潔且高效的能源。
+                        <br><br>
+                        表面上，我們是世界之翼的一員；實際上，這座深埋地下的設施是一個巨大的儀式場。為了治療人類心靈的疾病，我們在無盡的循環中尋找著救贖的答案。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="border border-gray-700 p-4 bg-[#0f0f0f]">
+                            <div class="text-xs text-gray-500 uppercase mb-2">Current Manager</div>
+                            <div class="text-xl text-white font-bold">X (Ayin)</div>
+                        </div>
+                        <div class="border border-gray-700 p-4 bg-[#0f0f0f]">
+                            <div class="text-xs text-gray-500 uppercase mb-2">AI Assistant</div>
+                            <div class="text-xl text-cyan-400 font-bold">Angela</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Logo / Visual -->
+                <div class="flex items-center justify-center border border-lobotomy-amber/30 bg-black/50 aspect-square relative overflow-hidden group">
+                    <div class="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-40 transition-opacity">
+                        <!-- Brain Logo SVG -->
+                        <svg viewBox="0 0 100 100" class="w-64 h-64 text-lobotomy-amber fill-current">
+                            <path d="M50 20 C30 20 15 35 15 55 C15 75 30 90 50 90 C70 90 85 75 85 55 C85 35 70 20 50 20 Z M50 30 C65 30 75 40 75 55 C75 70 65 80 50 80 C35 80 25 70 25 55 C25 40 35 30 50 30 Z"/>
+                            <path d="M50 35 V75 M30 55 H70" stroke="black" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="text-center relative z-10">
+                        <div class="text-6xl font-black text-lobotomy-amber mb-2 font-cinzel">L CORP</div>
+                        <div class="text-xs tracking-[0.5em] text-gray-500">WING OF THE WORLD</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sephirah / Departments Grid -->
+            <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
+                <span class="w-2 h-8 bg-lobotomy-amber mr-4"></span>
+                SEPHIRAH & DEPARTMENTS
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+                <!-- Asiyah -->
+                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
+                    <div class="text-xs text-lobotomy-amber mb-2 uppercase tracking-widest">Control Team</div>
+                    <h4 class="text-2xl text-white font-bold mb-1">Malkuth</h4>
+                    <p class="text-gray-500 text-xs mb-4">"I can do it. I will stand tall."</p>
+                    <div class="h-px w-full bg-gray-700 mb-4"></div>
+                    <p class="text-sm text-gray-400">控制部。負責指揮整個設施的基礎運作。Malkuth 總是充滿熱情，但也隱藏著自卑與急躁。</p>
+                </div>
+                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
+                    <div class="text-xs text-purple-400 mb-2 uppercase tracking-widest">Information Team</div>
+                    <h4 class="text-2xl text-white font-bold mb-1">Yesod</h4>
+                    <p class="text-gray-500 text-xs mb-4">"Discernment is key."</p>
+                    <div class="h-px w-full bg-gray-700 mb-4"></div>
+                    <p class="text-sm text-gray-400">情報部。負責處理與分析異想體的數據。Yesod 嚴謹而潔癖，極度厭惡不理性的行為。</p>
+                </div>
+                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
+                    <div class="text-xs text-orange-400 mb-2 uppercase tracking-widest">Training Team</div>
+                    <h4 class="text-2xl text-white font-bold mb-1">Hod</h4>
+                    <p class="text-gray-500 text-xs mb-4">"I just wanted to be a good person."</p>
+                    <div class="h-px w-full bg-gray-700 mb-4"></div>
+                    <p class="text-sm text-gray-400">培訓部。負責員工的教育與訓練。Hod 溫柔善良，但過去的錯誤讓她深受罪惡感折磨。</p>
+                </div>
+                <div class="sephirah-card border border-gray-700 bg-[#222] p-6 group">
+                    <div class="text-xs text-green-400 mb-2 uppercase tracking-widest">Safety Team</div>
+                    <h4 class="text-2xl text-white font-bold mb-1">Netzach</h4>
+                    <p class="text-gray-500 text-xs mb-4">"Do we really have to do this?"</p>
+                    <div class="h-px w-full bg-gray-700 mb-4"></div>
+                    <p class="text-sm text-gray-400">安保部。負責設施的安全維護。Netzach 依賴腦啡肽來逃避面對不斷死去的員工的痛苦。</p>
+                </div>
+                
+                <!-- Briah (Brief) -->
+                <div class="sephirah-card border border-yellow-700/50 bg-[#222] p-6 lg:col-span-2 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 text-[100px] font-black text-gray-800 opacity-20 pointer-events-none -mr-4 -mt-4">BRIAH</div>
+                    <div class="text-xs text-yellow-500 mb-2 uppercase tracking-widest">Middle Layer</div>
+                    <h4 class="text-2xl text-white font-bold mb-4">Central Command, Disciplinary, Welfare</h4>
+                    <ul class="text-sm text-gray-400 space-y-2">
+                        <li><strong class="text-yellow-200">Tiphereth:</strong> 中央本部。一對雙胞胎，面對絕望仍試圖尋找意義。</li>
+                        <li><strong class="text-red-400">Gebura:</strong> 懲戒部。前身為傳奇收尾人 Kali，負責鎮壓異想體。</li>
+                        <li><strong class="text-blue-400">Chesed:</strong> 福利部。曾是富家少爺，試圖在殘酷體制中尋找人性。</li>
+                    </ul>
+                </div>
+
+                <!-- Atziluth (Brief) -->
+                <div class="sephirah-card border border-red-900/50 bg-[#222] p-6 lg:col-span-2 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 text-[100px] font-black text-gray-800 opacity-20 pointer-events-none -mr-4 -mt-4">ATZILUTH</div>
+                    <div class="text-xs text-red-500 mb-2 uppercase tracking-widest">Lower Layer</div>
+                    <h4 class="text-2xl text-white font-bold mb-4">Extraction, Records, Architecture</h4>
+                    <ul class="text-sm text-gray-400 space-y-2">
+                        <li><strong class="text-gray-200">Binah:</strong> 研發部。前首腦調律者，掌握著提取異想體的核心秘密。</li>
+                        <li><strong class="text-gray-200">Hokma:</strong> 紀錄部。時間的管理者，也是 Ayin 最忠誠的追隨者。</li>
+                        <li><strong class="text-white">Kether:</strong> 構築部。所有故事的起點與終點。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Return Button -->
+            <div class="text-right">
+                <button onclick="returnToLimbus()" class="group relative inline-flex items-center justify-center px-8 py-4 font-mono text-sm font-bold text-red-500 transition-all duration-200 border-2 border-red-500 hover:bg-red-500 hover:text-black focus:outline-none cursor-pointer">
+                    <span class="mr-2 group-hover:animate-spin">⚠</span>
+                    TERMINATE CONNECTION
+                    <div class="absolute top-0 right-0 -mr-1 -mt-1 w-2 h-2 bg-red-500"></div>
+                    <div class="absolute bottom-0 left-0 -ml-1 -mb-1 w-2 h-2 bg-red-500"></div>
+                </button>
+                <div class="mt-2 text-[10px] text-gray-600">PROTOCOL: RESTORE_LIMBUS_VIEW</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALL MODALS (Shared across both views for simplicity) -->
+    
+    <!-- Lore Data Modal (With Interactive Title) -->
+    <div id="lore-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeLoreModal()"></div>
+        <div id="lore-modal-content" class="info-modal-content relative w-full max-w-lg bg-[#0a0a0a] border border-gray-600 p-8 shadow-2xl overflow-hidden">
+            <!-- 修改處：加入 ID 以便 JS 控制 -->
+            <div id="lore-top-bar" class="absolute top-0 left-0 w-full h-2 bg-red-800"></div>
+            <div class="absolute top-2 right-2 text-[10px] text-gray-600 font-mono">ARCHIVE_ACCESS_GRANTED</div>
+            <button onclick="closeLoreModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white font-mono mt-2">✕</button>
+            <div class="text-center mb-8 mt-4 relative z-10">
+                <!-- Interactive Title -->
+                <h2 id="lore-title" class="text-3xl font-bold text-white font-cinzel tracking-widest drop-shadow-lg mb-2 transition-all">Title</h2>
+                
+                <!-- Added Hint Text for Lobotomy -->
+                <div id="lore-click-hint" class="hidden text-[10px] text-yellow-500 animate-pulse mt-1 font-mono cursor-pointer">[ CLICK TO ACCESS TERMINAL ]</div>
+                
+                <div id="lore-subtitle" class="text-xs font-mono uppercase text-red-500 tracking-widest mt-2">Subtitle</div>
+            </div>
+            <div class="border-t border-b border-gray-700 py-6 my-6 relative z-10 bg-[#0a0a0a]/80">
+                <p id="lore-desc" class="text-gray-300 text-sm leading-loose text-justify font-light"></p>
+            </div>
+            <div class="flex justify-between items-center text-[10px] font-mono uppercase relative z-10 text-gray-500">
+                <span>System: Lobotomy Corp</span>
+                <span class="text-red-900 animate-pulse">● RECORDING</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sinner Modal -->
+    <div id="sinner-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeModal()"></div>
+        <div id="sinner-modal-content" class="relative w-full max-w-6xl h-[90vh] bg-[#0a0a0a] border border-gray-800 shadow-2xl flex flex-col md:flex-row overflow-hidden">
+            <button onclick="closeModal()" class="absolute top-6 right-6 z-50 text-gray-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full border border-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full relative bg-[#111] overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-800">
+                <div id="modal-bg-icon" class="modal-bg-svg"></div>
+                <img id="modal-img" src="" alt="Sinner" class="relative z-10 h-full w-full object-cover object-top md:object-contain filter contrast-110 drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]" onerror="this.style.display='none'">
+                <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-20"></div>
+            </div>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full p-8 md:p-12 flex flex-col justify-center relative z-30 overflow-y-auto custom-scrollbar">
+                <div class="mb-2">
+                    <h2 id="modal-num" class="text-6xl md:text-8xl font-black font-cinzel text-gray-800 select-none absolute top-4 right-8 opacity-20">01</h2>
+                    <span id="modal-name-en" class="text-sm tracking-[0.3em] uppercase font-cinzel font-bold block mb-2">Yi Sang</span>
+                    <h1 id="modal-name-zh" class="text-4xl md:text-5xl font-bold text-white mb-6 transition-all duration-300">李箱</h1>
+                </div>
+                <div id="modal-line" class="w-16 h-1 bg-red-600 mb-8"></div>
+                <blockquote class="mb-8 border-l-2 border-gray-700 pl-4 italic text-gray-400 text-lg md:text-xl font-light leading-relaxed">"<span id="modal-quote"></span>"</blockquote>
+                <div class="space-y-6 text-gray-300 text-sm md:text-base leading-loose">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div><span class="text-xs text-gray-500 uppercase tracking-wider block mb-1">Source Ref</span><span id="modal-ref" class="font-cinzel text-white border-b border-gray-700 pb-1"></span></div>
+                        <div><span class="text-xs text-gray-500 uppercase tracking-wider block mb-1">Affiliation</span><span class="font-cinzel text-white border-b border-gray-700 pb-1">Limbus Company</span></div>
+                    </div>
+                    <div><span class="text-xs text-gray-500 uppercase tracking-wider block mb-2">Observation Log</span><p id="modal-desc" class="text-gray-400 text-justify"></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Denied Warning -->
+    <div id="access-denied-warning" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/95 border-2 border-red-600 text-red-500 px-12 py-8 z-[200] hidden flex-col items-center justify-center shadow-[0_0_100px_rgba(220,38,38,0.8)] pointer-events-none">
+        <div class="text-6xl mb-4 animate-pulse">⚠</div>
+        <h3 class="text-3xl font-bold font-cinzel mb-2 tracking-widest text-white">ACCESS DENIED</h3>
+        <div class="h-px w-full bg-red-600 mb-4"></div>
+        <p class="font-mono text-lg tracking-widest font-bold text-red-500">禁止閱覽該罪人的過往紀錄</p>
+        <p class="font-mono text-xs text-red-900 mt-2">LEVEL 5 CLEARANCE REQUIRED</p>
+    </div>
+
+    <!-- Sancho Modal -->
+    <div id="sancho-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeSanchoModal()"></div>
+        <div id="sancho-modal-content" class="relative w-full max-w-6xl h-[90vh] bg-[#1a0505] border border-red-800 shadow-[0_0_50px_rgba(220,38,38,0.3)] flex flex-col md:flex-row overflow-hidden">
+            <button onclick="closeSanchoModal()" class="absolute top-6 right-6 z-50 text-red-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full border border-red-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full relative bg-[#2a0a0a] overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-red-900/50">
+                <svg class="absolute w-full h-full opacity-20 text-red-800" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="10,5" class="animate-spin-slow"/>
+                    <path d="M10,90 Q50,50 90,10" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.5"/>
+                </svg>
+                <div class="text-red-500 w-2/3 h-2/3 relative z-10 flex flex-col items-center justify-center">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5" class="drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]">
+                        <g transform="rotate(15, 50, 50)">
+                            <path d="M50,15 L85,40 L15,40 Z" stroke-linejoin="round" fill="none"/>
+                            <path d="M15,40 Q50,50 85,40" stroke-width="1"/>
+                            <line x1="50" y1="15" x2="45" y2="5" stroke-width="2"/>
+                        </g>
+                        <line x1="20" y1="45" x2="20" y2="70" stroke-width="1"/> 
+                        <line x1="20" y1="75" x2="10" y2="85" stroke-width="1"/>
+                        <line x1="80" y1="40" x2="80" y2="60" stroke-width="1"/>
+                        <line x1="80" y1="65" x2="90" y2="80" stroke-width="1"/>
+                        <line x1="50" y1="40" x2="40" y2="90" stroke-width="2" opacity="0.5"/> 
+                        <g transform="translate(0, 10) rotate(-20, 35, 60)">
+                             <path d="M28,60 Q25,55 28,50 L35,52 L40,58 L38,65 L28,60" fill="currentColor" stroke="none" opacity="0.7"/>
+                             <line x1="32" y1="35" x2="32" y2="60" stroke-width="0.5" opacity="0.5"/>
+                        </g>
+                        <g transform="translate(5, 0)">
+                            <path d="M64,55 Q61,50 64,45 L71,47 L76,53 L74,60 L64,55" fill="none" stroke="currentColor"/>
+                            <line x1="68" y1="30" x2="68" y2="50" stroke-width="0.5"/>
+                        </g>
+                        <path d="M10,90 L30,60 L20,40 L50,20" stroke="currentColor" stroke-width="1" opacity="0.8"/>
+                    </svg>
+                    <div class="text-sm font-cinzel tracking-[0.3em] text-red-500 mt-4 font-bold">BROKEN DREAM</div>
+                </div>
+            </div>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full p-8 md:p-12 flex flex-col justify-center relative z-30">
+                <div class="mb-2">
+                    <span class="text-sm tracking-[0.3em] uppercase font-cinzel font-bold block mb-2 text-red-500">La Sangre de Sancho</span>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">桑丘</h1>
+                </div>
+                <div class="w-16 h-1 bg-yellow-500 mb-8"></div>
+                <blockquote class="mb-8 border-l-2 border-red-900 pl-4 italic text-gray-400 text-lg md:text-xl font-light leading-relaxed">
+                    "<span class="text-red-300">夢想已經結束了...經理大人。</span>"
+                </blockquote>
+                <div class="space-y-6 text-gray-300 text-sm md:text-base leading-loose text-justify">
+                    <p>唐吉訶德的真實面貌。作為邊獄巴士的罪人，她一直在扮演著「正義的收尾人」這個角色。</p>
+                    <p>實際上，她是傳說中的血魔（Bloodfiend）——<strong class="text-red-500">「第二眷屬」</strong>。為了繼承父親的夢想，她穿上了那雙沉重的鞋子「Rocinante」，將自己困在永恆的遊樂園中。現在，夢醒了，剩下的只有責任與鮮血。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- City/Assoc/Grade/Color/Phenomena Modals -->
+    <div id="city-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeCityModal()"></div>
+        <div id="city-modal-content" class="info-modal-content relative w-full max-w-xl bg-black border-2 border-gray-800 p-8">
+            <button onclick="closeCityModal()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 font-mono">[CLOSE]</button>
+            <div class="text-center mb-8">
+                <div class="text-6xl font-black text-gray-800 mb-2 font-cinzel" id="city-letter">A</div>
+                <h2 class="text-3xl font-bold text-white font-cinzel tracking-widest" id="city-name">A Corp.</h2>
+                <div class="text-red-600 font-mono text-xs mt-1" id="city-status">STATUS: HEAD OF THE CITY</div>
+            </div>
+            <div class="border-t border-b border-gray-800 py-6 my-6">
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-500 font-mono text-xs">SINGULARITY:</span>
+                    <span class="text-white font-bold text-sm text-right" id="city-singularity">???</span>
+                </div>
+                <p class="text-gray-400 text-sm leading-relaxed font-light text-justify" id="city-desc"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finger Modal -->
+    <div id="finger-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeFingerModal()"></div>
+        <div id="finger-modal-content" class="info-modal-content relative w-full max-w-lg bg-[#1a1a1a] border border-gray-700 p-0 overflow-hidden group">
+            <div id="finger-header-bg" class="h-24 w-full bg-gray-800 relative flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')]"></div>
+                <div id="finger-roman" class="text-6xl font-cinzel font-bold text-white/20 select-none">I</div>
+                <button onclick="closeFingerModal()" class="absolute top-4 right-4 text-white/50 hover:text-white">✕</button>
+            </div>
+            <div class="p-8 relative">
+                <h2 id="finger-name-zh" class="text-3xl font-bold text-white mb-1">拇指</h2>
+                <h3 id="finger-name-en" class="text-sm font-cinzel text-gray-500 tracking-widest mb-6 uppercase">The Thumb</h3>
+                <div class="flex items-center space-x-3 mb-6">
+                    <span class="text-[10px] text-gray-400 uppercase tracking-widest border border-gray-700 px-2 py-1">Keyword</span>
+                    <span id="finger-keyword" class="text-sm text-white font-bold">階級與禮儀</span>
+                </div>
+                <p id="finger-desc" class="text-gray-400 text-sm leading-relaxed mb-8 border-l-2 border-gray-700 pl-4 text-justify"></p>
+                <div class="text-[10px] font-mono text-red-900 uppercase tracking-widest text-right">⚠ Threat Level: <span class="text-red-500 font-bold">Urban Nightmare+</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assoc Modal -->
+    <div id="assoc-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeAssocModal()"></div>
+        <div id="assoc-modal-content" class="info-modal-content relative w-full max-w-lg bg-[#0f0e0a] border border-yellow-900/30 p-8 shadow-[0_0_30px_rgba(251,191,36,0.1)]">
+            <button onclick="closeAssocModal()" class="absolute top-4 right-4 text-gray-500 hover:text-yellow-500 font-mono">✕</button>
+            <div class="text-center mb-6">
+                <div class="text-4xl font-black text-yellow-600/20 mb-2 font-cinzel select-none" id="assoc-num">I</div>
+                <h2 class="text-2xl font-bold text-white font-cinzel tracking-widest" id="assoc-name">Hana Association</h2>
+            </div>
+            <div class="border-l-2 border-yellow-600/50 pl-4 mb-6">
+                <p class="text-gray-300 text-sm leading-relaxed font-light text-justify" id="assoc-desc"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grade Modal -->
+    <div id="grade-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeGradeModal()"></div>
+        <div id="grade-modal-content" class="info-modal-content relative w-full max-w-md bg-[#1a1a1a] border border-gray-600 p-8 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+            <button onclick="closeGradeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white font-mono">✕</button>
+            <div class="text-center mb-8 relative">
+                <div id="grade-bg-num" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-9xl font-black text-gray-800 select-none pointer-events-none font-cinzel opacity-50">9</div>
+                <h2 class="text-3xl font-bold text-white font-cinzel tracking-widest relative z-10" id="grade-title">Grade 9</h2>
+                <div class="text-xs font-mono mt-2 uppercase tracking-wider" id="grade-subtitle">Street Rat</div>
+            </div>
+            <div class="border-t border-b border-gray-700 py-6 my-6">
+                <p class="text-gray-300 text-sm leading-loose text-justify font-light" id="grade-desc"></p>
+            </div>
+            <div class="flex justify-between items-center text-[10px] text-gray-600 font-mono uppercase">
+                <span>Hana Association Database</span>
+                <span id="grade-level-indicator">Low Rank</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Modal -->
+    <div id="color-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeColorModal()"></div>
+        <div id="color-modal-content" class="info-modal-content relative w-full max-w-lg bg-[#1a1a1a] border-2 p-8 shadow-2xl">
+            <button onclick="closeColorModal()" class="absolute top-4 right-4 text-white hover:text-red-500 font-mono z-50">✕</button>
+            <div class="absolute inset-0 overflow-hidden opacity-20">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/diagmonds-light.png')]"></div>
+            </div>
+            <div class="text-center mb-8 relative z-10">
+                <div id="color-title-en" class="text-xs font-mono tracking-[0.4em] uppercase mb-2 text-gray-500">The Legendary</div>
+                <h2 id="color-name" class="text-4xl font-bold text-white font-cinzel tracking-widest drop-shadow-lg">Red Mist</h2>
+                <div id="color-identity" class="text-sm font-bold mt-2 opacity-80">Kali</div>
+            </div>
+            <div class="border-t border-b border-white/10 py-6 my-6 relative z-10">
+                <p id="color-desc" class="text-gray-300 text-sm leading-loose text-justify font-light"></p>
+            </div>
+            <div class="flex justify-between items-center text-[10px] font-mono uppercase relative z-10">
+                <span class="text-gray-500">Threat Level: <span class="text-red-500 font-bold">UNMEASURABLE</span></span>
+                <span class="text-gray-500">Status: <span id="color-status" class="text-white">ACTIVE</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phenomena Modal -->
+    <div id="phenomena-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closePhenomenaModal()"></div>
+        <div id="phenomena-modal-content" class="relative w-full max-w-5xl h-[80vh] bg-black border border-gray-800 shadow-2xl flex flex-col md:flex-row overflow-hidden">
+            <button onclick="closePhenomenaModal()" class="absolute top-6 right-6 z-50 text-white hover:text-gray-300 transition-colors font-mono">✕</button>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full relative overflow-hidden flex items-center justify-center" id="phenomena-visual">
+                <div id="phenomena-bg" class="absolute inset-0 opacity-20"></div>
+                <div id="phenomena-icon" class="relative z-10 text-white w-3/4 h-3/4 flex items-center justify-center"></div>
+            </div>
+            <div class="w-full md:w-1/2 h-1/2 md:h-full p-8 md:p-16 flex flex-col justify-center bg-[#0a0a0a] border-l border-gray-800">
+                <div id="phenomena-type" class="text-xs font-mono tracking-widest mb-4 uppercase">Type</div>
+                <h2 id="phenomena-title" class="text-4xl md:text-5xl font-black font-cinzel mb-8 text-white">Title</h2>
+                <p id="phenomena-desc" class="text-gray-300 text-sm md:text-base leading-loose text-justify font-light mb-8"></p>
+                <div class="mt-auto">
+                     <div class="text-xs text-gray-600 font-mono uppercase tracking-widest border-t border-gray-800 pt-4">
+                        Project Moon // Phenomena Record
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core Logic for View Switching
+        const limbusView = document.getElementById('limbus-view');
+        const lobotomyView = document.getElementById('lobotomy-view');
+        const loreModal = document.getElementById('lore-modal');
+
+        function switchToLobotomyView() {
+            closeLoreModal();
+            // Transition effect
+            limbusView.style.opacity = '0';
+            setTimeout(() => {
+                limbusView.classList.add('hidden');
+                lobotomyView.classList.remove('hidden');
+                // Trigger reflow
+                void lobotomyView.offsetWidth;
+                lobotomyView.style.opacity = '1';
+                window.scrollTo(0,0);
+            }, 500);
+        }
+
+        function returnToLimbus() {
+            lobotomyView.style.opacity = '0';
+            setTimeout(() => {
+                lobotomyView.classList.add('hidden');
+                limbusView.classList.remove('hidden');
+                // Trigger reflow
+                void limbusView.offsetWidth;
+                limbusView.style.opacity = '1';
+                window.scrollTo(0,0);
+            }, 500);
+        }
+
+        // Data Definition (Consolidated)
+        const loreData = {
+            'seed': { title: '光之種計畫', subtitle: 'Seed of Light', desc: '由 Ayin 發起的宏大計畫，旨在治癒都市人類「心靈的疾病」。透過腦葉公司收集異想體產生的能源，試圖在為期 50 天的循環中讓所有人都能覺醒 E.G.O，從而擺脫絕望。然而，計畫最終被 Angela 強行中斷，導致光之種未能完全播撒，引發了名為「白夜黑晝」的現象，並導致了扭曲的產生。' },
+            'lobotomy': { title: '腦葉公司', subtitle: 'Lobotomy Corporation', desc: '曾經是都市的「L 公司」，負責生產清潔能源「腦啡」。其總部深埋於地下，收容了無數被稱為「異想體」的怪物，並通過管理它們來提取能源。隨著光之種計畫的失敗與圖書館事件的結束，腦葉公司徹底崩塌。其遺留的設施（分部）變成了充滿危險的迷宮，也是 Limbus Company 尋找「金枝」的主要場所。 (點擊標題以存取 L 公司管理終端)' },
+            'whitenight': { title: '白夜黑晝', subtitle: 'White Nights & Dark Days', desc: '隨著光之種計畫的中斷，原本應治癒人類心靈的光芒未能完全發芽，而是與都市的黑暗混合，在大氣中持續了七天七夜。這場異象被稱為「白夜黑晝」。雖然未能達成原本的救贖，但它從根本上改變了都市人，使他們獲得了將心靈具象化的可能性——也就是後來的神備 (E.G.O) 與扭曲 (Distortion)。' }
+        };
+
+        // Open Lore Modal Modified
+        function openLoreModal(key) {
+            const data = loreData[key];
+            if(!data) return;
+            const modalContent = document.getElementById('lore-modal-content');
+            const topBar = document.getElementById('lore-top-bar'); 
+            const titleElem = document.getElementById('lore-title');
+            const hintElem = document.getElementById('lore-click-hint');
+            
+            // Reset Styles
+            topBar.style.display = 'block';
+            topBar.style.background = '#991b1b';
+            titleElem.className = "text-3xl font-bold text-white font-cinzel tracking-widest drop-shadow-lg mb-2";
+            titleElem.onclick = null; // Clear handler
+            titleElem.style.cursor = 'default';
+            titleElem.classList.remove('hover:text-red-500', 'hover:scale-105');
+            hintElem.classList.add('hidden');
+
+            if (key === 'lobotomy') {
+                // Interactive Setup for Lobotomy
+                modalContent.style.borderColor = '#991b1b';
+                titleElem.classList.add('hover:text-red-500', 'hover:scale-105', 'cursor-pointer');
+                titleElem.style.cursor = 'pointer';
+                titleElem.onclick = switchToLobotomyView;
+                titleElem.title = "ACCESS RESTRICTED TERMINAL";
+                hintElem.classList.remove('hidden'); // Show hint
+            } else if (key === 'seed') {
+                topBar.style.display = 'none';
+                modalContent.style.borderWidth = '2px';
+                modalContent.style.borderImage = 'linear-gradient(to right, #e5e7eb, #facc15) 1';
+                titleElem.className = "text-3xl font-bold font-cinzel tracking-widest drop-shadow-lg mb-2 bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-yellow-200 to-yellow-500";
+            }
+
+            document.getElementById('lore-title').innerText = data.title;
+            document.getElementById('lore-subtitle').innerText = data.subtitle;
+            document.getElementById('lore-desc').innerText = data.desc;
+            loreModal.classList.add('active');
+        }
+        function closeLoreModal() { loreModal.classList.remove('active'); }
+
+        // Sinners Data (Subset for brevity in example, full list logic maintained)
+        const sinnersData = [
+            { id: "01", nameZh: "李箱", nameEn: "Yi Sang", color: "#A4B7C9", quote: "我曾擁有翅膀，卻遺忘了飛翔的方法。", ref: "The Wings", desc: "曾是某個「翼」的最年輕研究員。沈默寡言，經常陷入沈思。擁有極高的智力，但對日常事務顯得漠不關心。他的過去與「鏡子」技術有著密切的關聯，似乎一直在尋找著某种理想。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Yi_Sang_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><rect x="20" y="15" width="60" height="70" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="5,5" opacity="0.4"/><path d="M35,50 L85,20 L65,55 L75,75 L55,65 L45,85 L35,50 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M35,50 L55,65 M65,55 L50,45" stroke="currentColor" stroke-width="1" opacity="0.6"/><polygon points="15,80 25,85 20,95" fill="currentColor" opacity="0.6"/><polygon points="80,10 90,15 85,25" fill="currentColor" opacity="0.6"/><line x1="20" y1="15" x2="35" y2="30" stroke="currentColor" stroke-width="0.5"/></svg>` },
+            { id: "02", nameZh: "浮士德", nameEn: "Faust", color: "#F8BBD0", quote: "浮士德知曉一切。不，僅是浮士德所知曉之事。", ref: "Faust", desc: "Limbus Company 的大腦。自稱知曉都市的一切天才。態度傲慢但確實有能力的理性主義者。她負責打造了巴士「梅菲斯特」，並對各個異想體有著深刻的理解。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Faust_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M45,20 L55,20 L55,35 L75,80 L25,80 L45,35 Z" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="50,45 55,50 50,55 45,50" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="50" y1="55" x2="50" y2="65" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2"/><circle cx="50" cy="65" r="2" fill="currentColor"/></svg>` },
+            { id: "03", nameZh: "唐吉訶德", nameEn: "Don Quixote", color: "#FDD835", quote: "經理大人！正義就在那裡！讓我們衝鋒吧！", ref: "Don Quixote", desc: "極度狂熱的收尾人愛好者。正義感過剩，經常惹出麻煩，但戰鬥時的狂氣無人能及。隨身攜帶著名為「Rocinante」的鞋子，夢想著成為一名偉大的正義收尾人。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Don_Quixote_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><g opacity="0.4"><path d="M50,50 L50,10 M50,50 L90,50 M50,50 L50,90 M50,50 L10,50" stroke="currentColor" stroke-width="1"/><path d="M50,10 L70,30 L50,50 M90,50 L70,70 L50,50 M50,90 L30,70 L50,50 M10,50 L30,30 L50,50" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="50" cy="50" r="3" fill="currentColor"/></g><path d="M15,85 L85,15" stroke="currentColor" stroke-width="4" stroke-linecap="butt"/> <path d="M15,85 L35,65" stroke="currentColor" stroke-width="1.5" fill="none"/> <path d="M80,20 L70,30" stroke="currentColor" stroke-width="1" fill="none"/></svg>` },
+            { id: "04", nameZh: "良秀", nameEn: "Ryōshū", color: "#D32F2F", quote: "簡.無.聊。", ref: "Hell Screen", desc: "沈迷於「藝術」的劍客，雖然她的藝術通常涉及暴力與鮮血。說話喜歡使用只有自己懂的縮寫。戰鬥風格殘忍而華麗，隨身佩帶著一把從不離手的日本刀。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Ryoshu_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M15,85 Q50,50 85,15" stroke="currentColor" stroke-width="3" fill="none"/></svg>` },
+            { id: "05", nameZh: "默爾索", nameEn: "Meursault", color: "#283593", quote: "如果你下令，我就執行。", ref: "The Stranger", desc: "絕對服從命令，拒絕進行任何道德判斷。像機器一樣精確，也像機器一樣冷漠。曾經隸屬於某個大企業，擅長執行精確的戰術打擊。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Meursault_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><rect x="42" y="15" width="16" height="25" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="42" y="55" width="16" height="25" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="42" y="35" width="16" height="25" rx="5" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>` },
+            { id: "06", nameZh: "鴻璐", nameEn: "Hong Lu", color: "#00897B", quote: "這裡的便當也很有趣呢～雖然有點怪味。", ref: "Dream of the Red Chamber", desc: "富家少爺，對平民生活充滿好奇但缺乏常識。雖然看起來天真，但觀察力異常敏銳。他的左眼似乎擁有特殊的能力，能夠看穿事物的本質。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Hong_Lu_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M50,20 Q60,10 70,20" fill="none" stroke="currentColor" stroke-width="1"/><path d="M50,80 Q40,90 30,80" fill="none" stroke="currentColor" stroke-width="1"/></svg>` },
+            { id: "07", nameZh: "希斯克利夫", nameEn: "Heathcliff", color: "#7B1FA2", quote: "我要把這裡的一切都砸爛！直到我的怒火平息為止！", ref: "Wuthering Heights", desc: "充滿憤怒與破壞慾的街頭混混。與其說是用腦思考，不如說是用球棒思考。雖然行為粗魯，但在某些時候會展現出令人意外的單純與執著。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Heathcliff_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M15,20 L25,40 L10,50" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/><path d="M85,80 L75,60 L90,50" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/><path d="M70,20 L30,80" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="35" x2="55" y2="45" stroke="currentColor" stroke-width="1.5" stroke="black"/><line x1="55" y1="40" x2="50" y2="50" stroke="currentColor" stroke-width="1.5" stroke="black"/><line x1="50" y1="45" x2="45" y2="55" stroke="currentColor" stroke-width="1.5" stroke="black"/></svg>` },
+            { id: "08", nameZh: "以實瑪利", nameEn: "Ishmael", color: "#FF9800", quote: "只要不發瘋，我們就能活下去...大概吧。", ref: "Moby Dick", desc: "曾在海上航行的前船員。在這個瘋狂的團隊中，她通常扮演著比較正常的吐槽役角色。雖然看似理智，但內心深處似乎也隱藏著某種執念。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Ishmael_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><line x1="50" y1="10" x2="50" y2="80" stroke="currentColor" stroke-width="2.5"/><path d="M50,80 L35,65 M50,80 L65,65" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="45" r="15" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4,2"/></svg>` },
+            { id: "09", nameZh: "羅佳", nameEn: "Rodion", color: "#880E4F", quote: "哎呀，這種小事就別計較了。今晚去喝一杯如何？", ref: "Crime and Punishment", desc: "來自冰冷北方的罪人。性格開朗豪爽，喜歡賭博和美食。雖然外表看起來大大咧咧，但似乎揹負著沉重的罪孽感。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Rodion_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M30,80 L70,40" stroke="currentColor" stroke-width="2.5"/> <path d="M70,40 L85,55 L75,65 Z" fill="none" stroke="currentColor" stroke-width="2.5"/> <circle cx="30" cy="30" r="12" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="26" y="35" font-size="12" fill="currentColor" font-weight="bold">₽</text><path d="M20,70 L25,75 M35,85 L40,90" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg>` },
+            { id: "10", nameZh: "但丁", nameEn: "Dante", color: "#FF5722", quote: "<滴答，滴答...>", ref: "Divine Comedy", desc: "Limbus Company 的執行經理，頭部是一個燃燒的時鐘。失去了記憶，但擁有能夠回溯時間復活罪人的能力。雖然是管理者，卻經常被罪人們折騰。", imgUrl: "", svgContent: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="2"/><line x1="50" y1="15" x2="50" y2="25" stroke="currentColor" stroke-width="2"/><line x1="50" y1="85" x2="50" y2="95" stroke="currentColor" stroke-width="2"/><line x1="5" y1="50" x2="15" y2="50" stroke="currentColor" stroke-width="2"/><line x1="85" y1="50" x2="95" y2="50" stroke="currentColor" stroke-width="2"/><circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="50" cy="50" r="3" fill="currentColor"/></svg>` },
+            { id: "11", nameZh: "辛克萊", nameEn: "Sinclair", color: "#9CCC65", quote: "我...我不想再看到那些東西了...", ref: "Demian", desc: "性格膽怯的少年，對殘酷的都市生活感到恐懼。他的過去充滿了創傷，正處於自我毀滅與新生的邊緣。使用長戟作為武器。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Sinclair_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M20,50 A30,30 0 1,1 80,50" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="8,4" opacity="0.4"/><path d="M20,50 L30,60 M80,50 L70,60" stroke="currentColor" stroke-width="1" opacity="0.4"/><line x1="50" y1="90" x2="50" y2="10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/> <path d="M50,25 L70,30 L65,55 L50,60 Z" fill="none" stroke="currentColor" stroke-width="2"/> <path d="M50,30 L35,25 L40,40 Z" fill="currentColor" opacity="0.8"/> <path d="M50,75 Q30,65 40,50 Q50,40 55,45" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="55" cy="45" r="2" fill="currentColor"/> </svg>` },
+            { 
+                id: "12", 
+                nameZh: "奧提斯", 
+                nameEn: "Outis", 
+                color: "#556B2F", 
+                quote: "只要是經理的命令，哪怕是赴湯蹈火，我也在所不辭。", 
+                ref: "The Odyssey", 
+                desc: "軍人出身，對經理表現出過度的忠誠，擅長戰術規劃與奉承。然而，她那隱藏在笑容背後的真實意圖，<span class='cursor-pointer text-red-500 hover:text-red-400 border-b border-red-500 hover:shadow-[0_0_10px_rgba(220,38,38,0.5)] transition-all font-bold' onclick='showAccessDenied()' title='點擊查看詳細資料'>至今仍是一個謎</span>。", 
+                imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Outis_LCB.png", 
+                svgContent: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="5,5"/><path d="M40,30 L60,30 L65,50 L50,70 L35,50 Z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="40" y1="30" x2="40" y2="15" stroke="currentColor" stroke-width="2"/> </svg>` 
+            },
+            { id: "13", nameZh: "格里高爾", nameEn: "Gregor", color: "#795548", quote: "好吧，好吧...只要這隻手臂還能動...", ref: "The Metamorphosis", desc: "前煙霾戰爭的老兵，擁有一隻變異的蟲形右臂。性格隨和，經常被捲入麻煩中。他是某個實驗的倖存者，對自己的變異感到無奈。", imgUrl: "https://limbuscompany.wiki.gg/wiki/Special:FilePath/Gregor_LCB.png", svgContent: `<svg viewBox="0 0 100 100"><path d="M60,90 Q90,50 70,20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="75" y1="40" x2="85" y2="35" stroke="currentColor" stroke-width="1"/><rect x="20" y="30" width="15" height="25" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="27.5" cy="35" r="1" fill="currentColor"/><line x1="27.5" y1="30" x2="27.5" y2="10" stroke="currentColor" stroke-width="1"/></svg>` }
+        ];
+
+        // Basic City Data
+        const cityData = {
+            'A': { name: 'A Corp.', status: 'HEAD', sing: 'The Head', desc: '都市的統治者。負責制定「都市禁忌」並進行裁決。旗下擁有「眼 (Beholders)」、「爪 (Claws)」與「調律者 (Arbiters)」。' },
+            'B': { name: 'B Corp.', status: 'EYE', sing: 'The Eye', desc: '負責監視整個都市，無處不在的視線。其奇點與觀測有關。' },
+            'C': { name: 'C Corp.', status: 'CLAW', sing: 'The Claw', desc: '首腦的處刑執行者。擁有強大的戰鬥奇點，負責物理上的抹殺。' },
+            'D': { name: 'D Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'E': { name: 'E Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'F': { name: 'F Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'G': { name: 'G Corp.', status: 'FALLEN/NEW', sing: 'Gravity', desc: '舊 G 社曾參與煙霾戰爭，掌握重力奇點。現已被新的管理層接手。' },
+            'H': { name: 'H Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'I': { name: 'I Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'J': { name: 'J Corp.', status: 'WING', sing: 'Lock', desc: '位於 10 號區。該巢充斥著賭博文化，其奇點與「鎖定/保護」財產有關。' },
+            'K': { name: 'K Corp.', status: 'WING', sing: 'Regeneration', desc: '以生產「K 公司安瓿」聞名，能瞬間治癒傷口。奇點源自於「淚流滿面的事物」。' },
+            'L': { name: 'L Corp.', status: 'FALLEN', sing: 'Energy', desc: '曾負責生產都市能源「腦啡」。現已崩塌，其遺址成為 Limbus Company 的主要探索目標。' },
+            'M': { name: 'M Corp.', status: 'WING', sing: 'Psych Protection', desc: '提供精神防禦技術，其產品「月長石」被廣泛用於防禦精神攻擊。' },
+            'N': { name: 'N Corp.', status: 'WING', sing: 'Experience', desc: '以極端的純粹主義著稱，排斥義體。掌握著將「經驗」罐裝化的技術。' },
+            'O': { name: 'O Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'P': { name: 'P Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 據說是「巢」的保護者。' },
+            'Q': { name: 'Q Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'R': { name: 'R Corp.', status: 'WING', sing: 'Cloning', desc: '私營軍事企業。利用「孵化場」進行克隆與時間加速訓練，以此培養頂尖傭兵。' },
+            'S': { name: 'S Corp.', status: 'WING', sing: 'Unknown', desc: '主要涉及農業生產。也是劍契組 (Blade Lineage) 的起源地。' },
+            'T': { name: 'T Corp.', status: 'WING', sing: 'Time', desc: '掌握時間操作技術。負責收集並保存「時間」，以此維持都市的運作效率。' },
+            'U': { name: 'U Corp.', status: 'WING', sing: 'Resonance', desc: '位於大湖區域。專精於共鳴與波動技術，以巨大的音叉控制海洋。' },
+            'V': { name: 'V Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 據說與藝術和恢復有關。' },
+            'W': { name: 'W Corp.', status: 'WING', sing: 'Restoration', desc: '營運「W 列車」。表面上是空間移動，實則是利用時間與空間的重置技術。' },
+            'X': { name: 'X Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'Y': { name: 'Y Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 目前資訊不足。' },
+            'Z': { name: 'Z Corp.', status: 'WING', sing: 'Unknown', desc: '[DATA RESTRICTED] 都市的邊界。' }
+        };
+
+        // Five Fingers Data
+        const fingersData = {
+            'Thumb': { nameZh: '拇指', nameEn: 'The Thumb', color: '#ca8a04', symbol: 'I', keyword: '階級與禮儀', desc: '極度重視階級與禮儀的組織。對上級不敬是死罪。他們使用火槍作為武器，且子彈在都市中極為昂貴。任何違反禮節的行為都將受到殘酷的肅清。' },
+            'Index': { nameZh: '食指', nameEn: 'The Index', color: '#0891b2', symbol: 'II', keyword: '指令與代行', desc: '盲目遵循「指令」的信徒。無論指令多麼荒謬（如：朝牆壁撞頭十次），他們都會無條件執行。他們相信這是都市唯一的真理。擅長編織技術。' },
+            'Middle': { nameZh: '中指', nameEn: 'The Middle', color: '#9333ea', symbol: 'III', keyword: '家族與復仇', desc: '視成員為家人的龐大組織。若家族成員受辱，他們會將所有相關者記錄在「復仇之書」上，並展開無止境的報復，直到清算完畢。' },
+            'Ring': { nameZh: '無名指', nameEn: 'The Ring', color: '#dc2626', symbol: 'IV', keyword: '藝術與瘋狂', desc: '一群瘋狂的藝術家。他們認為生命與死亡的過程就是藝術。經常將受害者改造成「展覽品」，並設有評點員制度來評價這些「作品」。' },
+            'Pinky': { nameZh: '小指', nameEn: 'The Pinky', color: '#db2777', symbol: 'V', keyword: '承諾與保護', desc: '神秘的組織，重視「約定」。據說只要與他們簽訂契約並遵守承諾，就能獲得他們的庇護。但若違反約定，將面臨比死更慘的下場。' }
+        };
+
+        // Fixer Associations Data
+        const assocData = {
+            '1': { name: 'Hana', desc: '第一協會。管理所有收尾人與協會的總部，負責制定等級與規則。', color: '#eab308' },
+            '2': { name: 'Zwei', desc: '第二協會。負責治安與保護的警察組織，使用防禦性裝備。', color: '#0ea5e9' },
+            '3': { name: 'Tres', desc: '第三協會。專精於工坊武器的研發與修復，提供高科技武裝。', color: '#10b981' },
+            '4': { name: 'Shi', desc: '第四協會。專職暗殺的秘密組織，成員皆為受過嚴格訓練的殺手。', color: '#ef4444' },
+            '5': { name: 'Cinq', desc: '第五協會。擅長決鬥與禮儀，常擔任保鏢或決鬥代理人，使用細劍。', color: '#6366f1' },
+            '6': { name: 'Liu', desc: '第六協會。擅長大規模正面作戰，組織嚴密如軍隊，使用火焰與武術。', color: '#dc2626' },
+            '7': { name: 'Seven', desc: '第七協會。情報與調查專家，負責收集都市中的各種機密資訊。', color: '#84cc16' },
+            '8': { name: 'Eight', desc: '第八協會。詳細資訊不明，據推測與海上或邊界事務有關。', color: '#78716c' },
+            '9': { name: 'Devyat', desc: '第九協會。專精於快遞與運輸，無論貨物為何都能安全送達。', color: '#a855f7' },
+            '10': { name: 'Dieci', desc: '第十協會。知識的守護者，同時也擔任神職人員般的角色，使用重型裝備。', color: '#facc15' },
+            '11': { name: 'Öufi', desc: '第十一協會。負責處理契約與交易的公證，確保所有合約得到執行。', color: '#854d0e' },
+            '12': { name: 'Douze', desc: '第十二協會。詳細資訊不明，存在感極低，負責特殊機密任務。', color: '#57534e' }
+        };
+
+        // Fixer Grades Data
+        const gradesData = {
+            '9': { title: 'Grade 9', zh: '九階收尾人', subtitle: 'The Consumable', level: 'Low Rank', desc: '都市食物鏈的最底層。剛獲得執照的新人，裝備簡陋，經驗不足。通常負責尋找寵物、送信或清理下水道等雜務。死亡率極高，是隨處可見的消耗品。' },
+            '8': { title: 'Grade 8', zh: '八階收尾人', subtitle: 'The Novice', level: 'Low Rank', desc: '稍微累積了一些經驗，能夠處理簡單的戰鬥委託。雖然比九階稍好，但依然屬於容易被犧牲的底層戰力。大部分收尾人都在這個階段掙扎。' },
+            '7': { title: 'Grade 7', zh: '七階收尾人', subtitle: 'The Regular', level: 'Low Rank', desc: '脫離了菜鳥行列，開始具備一定的戰鬥技巧與生存意識。許多一般事務所的普通職員都處於這個階級，能夠處理街頭衝突。' },
+            '6': { title: 'Grade 6', zh: '六階收尾人', subtitle: 'The Veteran', level: 'Mid Rank', desc: '都市的中堅力量。擁有穩定的收入與不錯的裝備。能夠熟練應對一般的都市怪談與幫派衝突。開始有能力購買奇點技術的低階產品。' },
+            '5': { title: 'Grade 5', zh: '五階收尾人', subtitle: 'The Expert', level: 'Mid Rank', desc: '熟練的專家。通常在戰鬥中擔任小隊長或指揮官的角色。具備應對異想體或扭曲現象的基礎能力，是事務所的中流砥柱。' },
+            '4': { title: 'Grade 4', zh: '四階收尾人', subtitle: 'The Elite', level: 'High Rank', desc: '菁英級別的門檻。擁有獨特的 E.G.O 或高級工坊武裝。在一般的事務所中已經是王牌般的存在，能夠單獨解決複雜的案件。' },
+            '3': { title: 'Grade 3', zh: '三階收尾人', subtitle: 'The Master', level: 'High Rank', desc: '高階收尾人。名聲響亮，實力強大。能夠接受來自「翼」的直接委託，處理巢內部的棘手問題。其戰鬥力已超越常人範疇。' },
+            '2': { title: 'Grade 2', zh: '二階收尾人', subtitle: 'The Hero', level: 'Top Rank', desc: '頂尖強者。其個人實力足以改變一場小型戰爭的走向。距離傳說僅一步之遙，是無數收尾人仰望的目標。' },
+            '1': { title: 'Grade 1', zh: '一階收尾人', subtitle: 'The Legend', level: 'Top Rank', desc: '收尾人的頂點，僅次於「色彩」。每一個都是都市中的傳奇人物，擁有極高的權限與驚人的財富。常被大型協會或翼指名聘請。' }
+        };
+
+        // Color Data
+        const colorsData = [
+            { nameZh: '猩紅凝視 (維吉爾)', nameEn: 'The Red Gaze', identity: 'Vergilius', color: '#dc2626', desc: '危險等級：極高。現任 Limbus Company 的嚮導與指揮官。傳說只要與他對上視線，就會迎來血腥的終結。手持名為「Gladius」的武器。', status: 'ACTIVE' },
+            { nameZh: '殷紅迷霧 (卡莉)', nameEn: 'The Red Mist', identity: 'Kali', color: '#991b1b', desc: '傳說中的最強收尾人。獨自一人守護了後巷，甚至擊退過「首腦」的爪牙。她是 E.G.O 裝備的原型使用者，擁有壓倒性的戰鬥力。', status: 'DECEASED / LEGEND' },
+            { nameZh: '蒼藍殘響 (阿爾加利亞)', nameEn: 'The Blue Reverberation', identity: 'Argalia', color: '#60a5fa', desc: '殘響樂團的團長。為了某個目的而聚集了各路扭曲與強者，引發了圖書館的慘劇。手持巨大的鐮刀，攻擊如同狂亂的樂章。', status: 'DECEASED / BOOKED' },
+            { nameZh: '堇紫淚滴 (伊織)', nameEn: 'The Purple Tear', identity: 'Iori', color: '#a855f7', desc: '能夠自由穿梭於不同次元與時間的老練收尾人。為了尋找失蹤的兒子而踏遍無數世界線。精通多種架勢與武器，極難捉摸。', status: 'UNKNOWN' },
+            { nameZh: '漆黑噤默 (羅蘭)', nameEn: 'The Black Silence', identity: 'Roland', color: '#9ca3af', desc: '曾戴著黑色面具的收尾人，因失去摯愛而陷入瘋狂，在都市中引發了無數血案。雖然外表看似輕浮，但隱藏著深不可測的實力與悲傷。', status: 'ACTIVE' },
+            { nameZh: '靛藍老人', nameEn: 'The Indigo Elder', identity: 'Unknown', color: '#6366f1', desc: '大湖的傳說。專門狩獵被稱為「五大罪」的巨型鯨魚。使用巨大的魚叉與魚雷，其實力足以對抗大自然的災害。', status: 'ACTIVE' },
+            { nameZh: '朱紅十字', nameEn: 'The Vermilion Cross', identity: 'Unknown', color: '#ea580c', desc: '曾受僱於 Hana 協會的高階色彩收尾人。在處理殘響樂團事件時不幸殞命，其屍體被用作復活他人的材料。', status: 'DECEASED' }
+        ];
+
+        // Render Sinners
+        const grid = document.getElementById('sinners-grid');
+        sinnersData.forEach(sinner => {
+            const card = document.createElement('div');
+            card.className = 'sinner-card group';
+            card.style.setProperty('--sinner-color', sinner.color);
+            
+            card.onclick = () => openModal(sinner.id);
+            card.innerHTML = `
+                <div class="sinner-num">${sinner.id}</div>
+                <div class="sinner-img-wrapper">
+                    <div class="sinner-icon">${sinner.svgContent}</div>
+                </div>
+                <div class="p-6 relative mt-auto">
+                    <div class="flex items-baseline justify-between mb-2">
+                        <h3 class="text-2xl font-bold text-white">${sinner.nameZh}</h3>
+                        <span class="sinner-name-en font-cinzel text-sm">${sinner.nameEn}</span>
+                    </div>
+                    <div class="sinner-accent-line"></div>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">「${sinner.quote}」</p>
+                    <div class="text-xs text-gray-600 uppercase tracking-wider">Ref: ${sinner.ref}</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // Render City Grid
+        const corpGrid = document.getElementById('corp-grid');
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (let char of letters) {
+            const btn = document.createElement('div');
+            btn.className = 'corp-btn cursor-pointer';
+            btn.innerText = char;
+            btn.onclick = () => openCityModal(char);
+            corpGrid.appendChild(btn);
+        }
+
+        // Render Finger Grid
+        const fingerGrid = document.getElementById('finger-grid');
+        Object.keys(fingersData).forEach(key => {
+            const finger = fingersData[key];
+            const btn = document.createElement('div');
+            btn.className = 'bg-[#111] p-4 border border-gray-800 hover:border-white transition-all cursor-pointer group flex flex-col items-center justify-center h-32';
+            btn.style.borderColor = 'rgba(255,255,255,0.1)';
+            btn.onmouseover = () => btn.style.borderColor = finger.color;
+            btn.onmouseout = () => btn.style.borderColor = 'rgba(255,255,255,0.1)';
+            btn.onclick = () => openFingerModal(key);
+            btn.innerHTML = `<div class="text-4xl font-cinzel font-bold mb-2 opacity-50 group-hover:opacity-100 transition-opacity" style="color:${finger.color}">${finger.symbol}</div><h4 class="text-white font-bold text-sm">${finger.nameZh}</h4>`;
+            fingerGrid.appendChild(btn);
+        });
+
+        // Render Assoc Grid
+        const assocGrid = document.getElementById('assoc-grid');
+        Object.keys(assocData).forEach(key => {
+            const assoc = assocData[key];
+            const btn = document.createElement('div');
+            btn.className = 'assoc-btn cursor-pointer';
+            
+            // Hover effect logic
+            btn.onmouseenter = () => {
+                btn.style.borderColor = assoc.color;
+                btn.style.boxShadow = `0 0 20px ${assoc.color}33`;
+                btn.querySelector('.assoc-num').style.color = assoc.color;
+                btn.querySelector('.assoc-name').style.color = 'white';
+            };
+            btn.onmouseleave = () => {
+                btn.style.borderColor = '#333';
+                btn.style.boxShadow = 'none';
+                btn.querySelector('.assoc-num').style.color = '#333';
+                btn.querySelector('.assoc-name').style.color = '#666';
+            };
+
+            btn.onclick = () => openAssocModal(key);
+            btn.innerHTML = `<span class="assoc-num">${key}</span><span class="assoc-name">${assoc.name}</span>`;
+            assocGrid.appendChild(btn);
+        });
+
+        // Render Grade Grid (9 to 1)
+        const gradeGrid = document.getElementById('grade-grid');
+        for (let i = 9; i >= 1; i--) {
+            const btn = document.createElement('div');
+            let borderClass = 'border-gray-800 text-gray-600';
+            let hoverClass = 'hover:border-gray-500 hover:text-gray-300';
+            let bgClass = 'bg-[#0a0a0a]';
+            let extraContent = '';
+            if (i <= 6) { borderClass = 'border-gray-700 text-cyan-900'; hoverClass = 'hover:border-cyan-500 hover:text-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'; bgClass = 'bg-[#0f1215]'; }
+            if (i <= 3) { borderClass = 'border-yellow-900/40 text-yellow-900'; hoverClass = 'hover:border-yellow-500 hover:text-yellow-400 hover:shadow-[0_0_25px_rgba(234,179,8,0.3)]'; bgClass = 'bg-[#1a1500]'; }
+            if (i === 1) { borderClass = 'border-yellow-600/50 text-yellow-600'; hoverClass = 'hover:border-white hover:text-white hover:shadow-[0_0_40px_rgba(250,204,21,0.6)]'; bgClass = 'bg-gradient-to-b from-[#221f10] to-black'; extraContent = '<div class="absolute inset-0 bg-[url(\'https://www.transparenttextures.com/patterns/diagmonds-light.png\')] opacity-20"></div>'; }
+            btn.className = `h-24 border ${borderClass} ${hoverClass} ${bgClass} flex flex-col items-center justify-center transition-all duration-300 cursor-pointer group relative overflow-hidden`;
+            btn.onclick = () => openGradeModal(i.toString());
+            btn.innerHTML = `${extraContent}<span class="text-[10px] font-mono mb-1 opacity-50 tracking-widest relative z-10">GRADE</span><span class="text-4xl font-cinzel font-bold relative z-10 group-hover:scale-110 transition-transform">${i}</span>`;
+            gradeGrid.appendChild(btn);
+        }
+
+        // Render Colors List
+        const colorListGrid = document.getElementById('color-list-grid');
+        colorsData.forEach((color, index) => {
+            const btn = document.createElement('div');
+            btn.className = 'flex items-center p-2 border border-transparent hover:border-white/20 hover:bg-white/5 cursor-pointer transition-all rounded';
+            btn.onclick = () => openColorModal(index);
+            btn.innerHTML = `
+                <span class="w-2 h-2 rounded-full mr-2 shadow-[0_0_5px_${color.color}]" style="background-color:${color.color}"></span>
+                <span style="color:${color.color}" class="text-xs font-bold tracking-wider">${color.nameZh}</span>
+            `;
+            colorListGrid.appendChild(btn);
+        });
+
+        // Modals Logic
+        const sinnerModal = document.getElementById('sinner-modal');
+        const sanchoModal = document.getElementById('sancho-modal'); 
+        const phenomenaModal = document.getElementById('phenomena-modal');
+
+        function openModal(id) {
+            const sinner = sinnersData.find(s => s.id === id);
+            if (!sinner) return;
+            
+            document.getElementById('modal-num').innerText = sinner.id;
+            
+            // Handle Name (Special Logic for Don Quixote ID 03 ONLY)
+            const nameZhElement = document.getElementById('modal-name-zh');
+            // Clone element to strip old event listeners and reset state
+            const newNameZhElement = nameZhElement.cloneNode(true);
+            nameZhElement.parentNode.replaceChild(newNameZhElement, nameZhElement);
+            
+            // 清空 H1，改用 Span 包裹文字
+            newNameZhElement.innerHTML = ''; 
+            const nameSpan = document.createElement('span');
+            nameSpan.innerText = sinner.nameZh;
+            nameSpan.className = "inline-block transition-all duration-300"; // 基礎動畫
+
+            // 修改處：移除奧提斯名字的互動邏輯，只保留唐吉訶德
+            if (sinner.id === "03") { // Don Quixote
+                nameSpan.classList.add('cursor-pointer', 'hover:text-red-500', 'hover:scale-105', 'hover:drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]', 'origin-left');
+                nameSpan.title = "點擊查看隱藏資訊"; 
+                nameSpan.onclick = openSanchoReveal;
+            }
+
+            newNameZhElement.appendChild(nameSpan);
+
+            document.getElementById('modal-name-en').innerText = sinner.nameEn;
+            document.getElementById('modal-quote').innerText = sinner.quote;
+            document.getElementById('modal-desc').innerHTML = sinner.desc; // innerHTML for clickable span
+            
+            document.getElementById('modal-ref').innerText = sinner.ref;
+            const img = document.getElementById('modal-img');
+            if (sinner.imgUrl) { img.src = `https://wsrv.nl/?url=${sinner.imgUrl}&w=800&output=webp`; img.style.display = 'block'; } else { img.style.display = 'none'; }
+            const bgIcon = document.getElementById('modal-bg-icon');
+            bgIcon.innerHTML = sinner.svgContent;
+            bgIcon.style.color = sinner.color;
+            document.getElementById('modal-name-en').style.color = sinner.color;
+            document.getElementById('modal-line').style.backgroundColor = sinner.color;
+            document.getElementById('modal-num').style.color = sinner.color;
+            sinnerModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() { sinnerModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+        // Access Denied Function
+        function showAccessDenied() {
+            const warning = document.getElementById('access-denied-warning');
+            warning.classList.remove('hidden');
+            warning.classList.add('flex');
+            
+            setTimeout(() => {
+                warning.classList.add('hidden');
+                warning.classList.remove('flex');
+            }, 2500);
+        }
+
+        // Special Function for Sancho
+        function openSanchoReveal() {
+            closeModal(); 
+            setTimeout(() => {
+                sanchoModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }, 300);
+        }
+        function closeSanchoModal() { sanchoModal.classList.remove('active'); document.body.style.overflow = 'auto'; }
+
+        const cityModal = document.getElementById('city-modal');
+        function openCityModal(letter) {
+            const data = cityData[letter];
+            if(!data) return;
+            document.getElementById('city-letter').innerText = letter;
+            document.getElementById('city-name').innerText = data.name;
+            document.getElementById('city-status').innerText = `STATUS: ${data.status}`;
+            document.getElementById('city-singularity').innerText = data.sing;
+            document.getElementById('city-desc').innerText = data.desc;
+            cityModal.classList.add('active');
+        }
+        function closeCityModal() { cityModal.classList.remove('active'); }
+
+        const fingerModal = document.getElementById('finger-modal');
+        function openFingerModal(key) {
+            const data = fingersData[key];
+            if(!data) return;
+            document.getElementById('finger-roman').innerText = data.symbol;
+            document.getElementById('finger-name-zh').innerText = data.nameZh;
+            document.getElementById('finger-name-en').innerText = data.nameEn;
+            document.getElementById('finger-keyword').innerText = data.keyword;
+            document.getElementById('finger-desc').innerText = data.desc;
+            document.getElementById('finger-header-bg').style.borderBottom = `4px solid ${data.color}`;
+            fingerModal.classList.add('active');
+        }
+        function closeFingerModal() { fingerModal.classList.remove('active'); }
+
+        const assocModal = document.getElementById('assoc-modal');
+        function openAssocModal(key) {
+            const data = assocData[key];
+            if(!data) return;
+            document.getElementById('assoc-num').innerText = key;
+            document.getElementById('assoc-name').innerText = data.name + " Association";
+            document.getElementById('assoc-desc').innerText = data.desc;
+            document.getElementById('assoc-num').style.color = data.color;
+            document.getElementById('assoc-modal-content').style.boxShadow = `0 0 30px ${data.color}33`;
+            document.getElementById('assoc-modal-content').style.borderColor = `${data.color}66`;
+            assocModal.classList.add('active');
+        }
+        function closeAssocModal() { assocModal.classList.remove('active'); }
+
+        const gradeModal = document.getElementById('grade-modal');
+        function openGradeModal(key) {
+            const data = gradesData[key];
+            if(!data) return;
+            document.getElementById('grade-bg-num').innerText = key;
+            document.getElementById('grade-title').innerText = data.zh;
+            document.getElementById('grade-subtitle').innerText = data.title.toUpperCase();
+            document.getElementById('grade-desc').innerText = data.desc;
+            document.getElementById('grade-level-indicator').innerText = data.level;
+            
+            const modalContent = document.getElementById('grade-modal-content');
+            const titleElem = document.getElementById('grade-title');
+            const numElem = document.getElementById('grade-bg-num');
+
+            // Reset styles
+            modalContent.className = "info-modal-content relative w-full max-w-md bg-[#1a1a1a] border p-8 shadow-2xl";
+            
+            if (key >= 7) { // Low
+                modalContent.style.borderColor = "#4b5563";
+                modalContent.style.boxShadow = "0 0 20px rgba(0,0,0,0.8)";
+                titleElem.className = "text-3xl font-bold text-gray-400 font-cinzel tracking-widest relative z-10";
+                numElem.className = "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-9xl font-black text-gray-800 select-none pointer-events-none font-cinzel opacity-50";
+            } else if (key >= 4) { // Mid
+                modalContent.style.borderColor = "#06b6d4";
+                modalContent.style.boxShadow = "0 0 30px rgba(6,182,212,0.1)";
+                titleElem.className = "text-3xl font-bold text-cyan-400 font-cinzel tracking-widest relative z-10";
+                numElem.className = "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-9xl font-black text-cyan-900/30 select-none pointer-events-none font-cinzel";
+            } else { // High
+                modalContent.style.borderColor = "#eab308";
+                modalContent.style.boxShadow = "0 0 40px rgba(234,179,8,0.2)";
+                titleElem.className = "text-3xl font-bold text-yellow-400 font-cinzel tracking-widest relative z-10";
+                numElem.className = "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-9xl font-black text-yellow-900/30 select-none pointer-events-none font-cinzel";
+            }
+
+            gradeModal.classList.add('active');
+        }
+        function closeGradeModal() { gradeModal.classList.remove('active'); }
+
+        const colorModal = document.getElementById('color-modal');
+        function openColorModal(index) {
+            const data = colorsData[index];
+            if(!data) return;
+            document.getElementById('color-name').innerText = data.nameEn;
+            document.getElementById('color-title-en').innerText = data.nameZh.split(' ')[0]; // Get Chinese Title
+            document.getElementById('color-identity').innerText = data.identity;
+            document.getElementById('color-desc').innerText = data.desc;
+            document.getElementById('color-status').innerText = data.status;
+            
+            document.getElementById('color-name').style.color = data.color;
+            document.getElementById('color-name').style.textShadow = `0 0 20px ${data.color}`;
+            document.getElementById('color-modal-content').style.borderColor = data.color;
+            document.getElementById('color-modal-content').style.boxShadow = `0 0 50px ${data.color}44`;
+            
+            colorModal.classList.add('active');
+        }
+        function closeColorModal() { colorModal.classList.remove('active'); }
+
+        // Phenomena Logic
+        // 修改處：E.G.O 動態圖標 (穩定、旋轉、脈動)
+        const egoIcon = `
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+            <defs>
+                <filter id="ego-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- 核心：穩定的心靈 -->
+            <circle cx="50" cy="50" r="8" fill="currentColor" fill-opacity="0.2" filter="url(#ego-glow)">
+                <animate attributeName="r" values="8;10;8" dur="4s" repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" values="0.2;0.5;0.2" dur="4s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="50" cy="50" r="4" fill="currentColor">
+                <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite" />
+            </circle>
+
+            <!-- 內層護盾 (逆時針旋轉) -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="20s" repeatCount="indefinite" />
+                <path d="M50,25 L65,35 L65,65 L50,75 L35,65 L35,35 Z" stroke-width="1.5" opacity="0.8"/>
+                <circle cx="50" cy="25" r="1" fill="currentColor"/>
+                <circle cx="65" cy="35" r="1" fill="currentColor"/>
+                <circle cx="65" cy="65" r="1" fill="currentColor"/>
+                <circle cx="50" cy="75" r="1" fill="currentColor"/>
+                <circle cx="35" cy="65" r="1" fill="currentColor"/>
+                <circle cx="35" cy="35" r="1" fill="currentColor"/>
+            </g>
+
+            <!-- 外層武裝 (順時針旋轉) -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="30s" repeatCount="indefinite" />
+                <path d="M50,10 L55,20" stroke-width="1"/>
+                <path d="M50,90 L45,80" stroke-width="1"/>
+                <path d="M10,50 L20,45" stroke-width="1"/>
+                <path d="M90,50 L80,55" stroke-width="1"/>
+                
+                <circle cx="50" cy="50" r="35" stroke-width="0.5" stroke-dasharray="10,5" opacity="0.5"/>
+                <path d="M50,15 A35,35 0 0 1 85,50" stroke-width="1.5" opacity="0.8"/>
+                <path d="M50,85 A35,35 0 0 1 15,50" stroke-width="1.5" opacity="0.8"/>
+            </g>
+        </svg>`;
+
+        // 修改處：重新設計的 Distortion 圖標 - 對稱的空間扭曲 (Symmetrical Warp)
+        // 移除了尖刺，改用旋轉的橢圓軌跡創造視覺干涉 (Moiré pattern) 效果，看起來更舒適但仍具備扭曲感
+        const distortionIcon = `
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <defs>
+                <filter id="distort-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <!-- 核心：被吞噬的奇點 (快速閃爍變形) -->
+            <path d="M50,45 L55,50 L50,55 L45,50 Z" fill="currentColor" filter="url(#distort-glow)">
+                <animate attributeName="d" values="M50,45 L55,50 L50,55 L45,50 Z; M48,48 L52,48 L52,52 L48,52 Z; M50,42 L58,50 L50,58 L42,50 Z" dur="0.15s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.8;0.5;1;0.7" dur="0.3s" repeatCount="indefinite" />
+            </path>
+
+            <!-- 內環：流動的波紋 (呼吸感) -->
+            <circle cx="50" cy="50" r="15" stroke-width="1" opacity="0.8">
+                 <animate attributeName="r" values="15;18;15" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- 外環結構：對稱的旋轉橢圓 (創造舒適的幾何扭曲感) -->
+            <g opacity="0.6">
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="20s" repeatCount="indefinite"/>
+                <ellipse cx="50" cy="50" rx="32" ry="26" stroke-width="0.8" />
+                <ellipse cx="50" cy="50" rx="26" ry="32" stroke-width="0.8" />
+            </g>
+            
+            <g opacity="0.5">
+                <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="25s" repeatCount="indefinite"/>
+                <ellipse cx="50" cy="50" rx="38" ry="30" stroke-width="0.5" stroke-dasharray="5,5"/>
+                <ellipse cx="50" cy="50" rx="30" ry="38" stroke-width="0.5" stroke-dasharray="5,5"/>
+            </g>
+            
+            <!-- 故障雜訊線條 (保留少量，作為點綴) -->
+            <path d="M10,50 L90,50" stroke-width="0.5" opacity="0.2">
+                 <animate attributeName="d" values="M10,50 L90,50; M10,45 L90,55; M10,50 L90,50" dur="0.2s" repeatCount="indefinite"/>
+            </path>
+        </svg>`;
+        
+        // Carmen Data (SVG Icon)
+        const carmenIcon = `
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" stroke="url(#carmen_grad)" stroke-width="0.5" stroke-linecap="round">
+            <defs>
+                <linearGradient id="carmen_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#a855f7" />
+                </linearGradient>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            <!-- 核心：脈動的大腦/光球 -->
+            <circle cx="50" cy="50" r="6" fill="url(#carmen_grad)" class="animate-pulse" filter="url(#glow)">
+                <animate attributeName="r" values="6;7;6" dur="4s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite" />
+            </circle>
+            
+            <!-- 複雜的神經束/光芒 (有機曲線) -->
+            <g opacity="0.8">
+                <!-- 第一層分支 -->
+                <path d="M50,44 C50,30 30,25 50,5 M50,35 C60,30 65,20 60,10 M50,30 C40,25 35,15 40,5" />
+                <path d="M50,56 C50,70 70,75 50,95 M50,65 C40,70 35,80 40,90 M50,70 C60,75 65,85 60,95" />
+                <path d="M44,50 C30,50 25,70 5,50 M35,50 C30,40 20,35 10,40 M30,50 C25,60 15,65 5,60" />
+                <path d="M56,50 C70,50 75,30 95,50 M65,50 C70,60 80,65 90,60 M70,50 C75,40 85,35 95,40" />
+                
+                <!-- 第二層細節 (對角線神經) -->
+                <path d="M54,46 C60,40 80,20 90,10" stroke-width="0.3" opacity="0.6"/>
+                <path d="M46,54 C40,60 20,80 10,90" stroke-width="0.3" opacity="0.6"/>
+                <path d="M54,54 C60,60 80,80 90,90" stroke-width="0.3" opacity="0.6"/>
+                <path d="M46,46 C40,40 20,20 10,10" stroke-width="0.3" opacity="0.6"/>
+            </g>
+
+            <!-- 環繞的軌道/光環 (旋轉) -->
+            <g class="animate-[spin_60s_linear_infinite]" style="transform-origin: 50px 50px;">
+                <circle cx="50" cy="50" r="20" stroke-width="0.2" stroke-dasharray="5,5" opacity="0.6"/>
+                <circle cx="50" cy="50" r="32" stroke-width="0.1" stroke-dasharray="15,10" opacity="0.4"/>
+                <circle cx="50" cy="50" r="45" stroke-width="0.3" stroke-dasharray="2,10" opacity="0.3"/>
+                <!-- 軌道上的衛星點 -->
+                <circle cx="50" cy="5" r="1" fill="white" opacity="0.8"/>
+                <circle cx="50" cy="95" r="1" fill="white" opacity="0.8"/>
+            </g>
+            
+            <!-- 懸浮粒子 (隨機閃爍) -->
+            <circle cx="20" cy="30" r="0.8" fill="white" opacity="0.6"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/></circle>
+            <circle cx="80" cy="70" r="0.6" fill="white" opacity="0.6"><animate attributeName="opacity" values="0;1;0" dur="5s" repeatCount="indefinite"/></circle>
+            <circle cx="30" cy="80" r="0.5" fill="white" opacity="0.6"><animate attributeName="opacity" values="0;1;0" dur="7s" repeatCount="indefinite"/></circle>
+            <circle cx="70" cy="20" r="0.7" fill="white" opacity="0.6"><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/></circle>
+        </svg>`;
+
+
+        const phenomenaData = {
+            'ego': {
+                type: 'EXTERMINATION OF GEOMETRICAL ORGAN',
+                title: 'E.G.O',
+                desc: '「神備」。當一個人面臨極度的精神壓力，聽到了「聲音」的誘惑，卻能自始至終忠於自我的道路，不被動搖，心靈就會具象化為強大的武裝。這就是 E.G.O。它是人類精神的結晶，是對抗絕望的利劍。',
+                icon: egoIcon,
+                color: '#06b6d4' // Cyan
+            },
+            'distortion': {
+                type: 'THE PHENOMENON',
+                title: 'Distortion',
+                desc: '「扭曲」。當受到「聲音」的誘導，失去了對自我的堅持，被慾望與絕望吞噬，肉體將隨之異變，成為名為扭曲的怪物。這是光之種未竟的代價。扭曲者通常擁有某種超自然的特殊能力，且外型與其內心的執念高度相關。',
+                icon: distortionIcon,
+                color: '#a855f7' // Purple
+            },
+            'carmen': {
+                type: 'THE VOICE / THE BLUEPRINT',
+                title: 'Carmen',
+                desc: '「光之種」計畫的發起人，也是目前所有異變的源頭。雖然她的肉體已經消亡，但她的意識融入了光芒之中，成為了在每個人心碎之時響起的「聲音」。她並非惡意，而是試圖以自己的方式「愛」著人類，引導他們釋放真實的慾望。若受其誘導失去自我堅持，即為扭曲；若能貫徹自我道路，即為神備。',
+                icon: carmenIcon,
+                color: '#e5e5e5' // Base text color fallback
+            }
+        };
+
+        function openPhenomenaModal(key) {
+            const data = phenomenaData[key];
+            if(!data) return;
+            
+            const typeElem = document.getElementById('phenomena-type');
+            const titleElem = document.getElementById('phenomena-title');
+            const iconElem = document.getElementById('phenomena-icon');
+            const bgElem = document.getElementById('phenomena-bg');
+
+            typeElem.innerText = data.type;
+            titleElem.innerText = data.title;
+            document.getElementById('phenomena-desc').innerText = data.desc;
+            iconElem.innerHTML = data.icon;
+            
+            if (key === 'carmen') {
+                // Carmen 特殊樣式：漸層字體與背景
+                typeElem.style.background = 'linear-gradient(to right, #06b6d4, #a855f7)';
+                typeElem.style.webkitBackgroundClip = 'text';
+                typeElem.style.webkitTextFillColor = 'transparent';
+                
+                titleElem.style.color = 'white';
+                
+                iconElem.style.color = ''; // Let SVG gradient handle it
+                bgElem.style.background = 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(168,85,247,0.1))';
+            } else {
+                // Reset for others
+                typeElem.style.background = 'none';
+                typeElem.style.webkitTextFillColor = data.color;
+                typeElem.style.color = data.color;
+                
+                titleElem.style.color = 'white';
+                
+                iconElem.style.color = data.color;
+                bgElem.style.background = '';
+                bgElem.style.backgroundColor = data.color;
+            }
+            
+            phenomenaModal.classList.add('active');
+        }
+        function closePhenomenaModal() { phenomenaModal.classList.remove('active'); }
+
+
+        // Initialize Icons in the grid (This was the missing part!)
+        document.getElementById('ego-icon-container').innerHTML = egoIcon;
+        document.getElementById('carmen-icon-container').innerHTML = carmenIcon;
+        document.getElementById('distortion-icon-container').innerHTML = distortionIcon;
+
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const hero = document.querySelector('header');
+            if (scrollY < hero.offsetHeight) {
+                hero.style.backgroundPositionY = `${scrollY * 0.5}px`;
+            }
+        });
+    </script>
+</body>
+</html>
