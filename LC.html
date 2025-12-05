@@ -1894,6 +1894,112 @@
         document.getElementById('carmen-icon-container').innerHTML = carmenIcon;
         document.getElementById('distortion-icon-container').innerHTML = distortionIcon;
 
+        // ================= 異想體資料庫 (Abnormality Database) =================
+        const abnormalitiesData = {
+            'ZAYIN': {
+                color: '#22c55e', // Green
+                borderColor: 'border-green-600',
+                shadowColor: 'shadow-[0_0_30px_rgba(34,197,94,0.1)]',
+                list: [
+                    {
+                        code: 'O-03-03',
+                        name: 'One Sin and Hundreds of Good Deeds',
+                        zhName: '一罪與百善',
+                        quote: '它以人們對話中產生的『罪惡』為食。',
+                        desc: '這是一個巨大的漂浮骷髏頭，被荊棘冠冕環繞，上面釘著十字架。它是設施中最無害的存在。只要向它告解，心靈便能獲得片刻的安寧。據說它承擔了原本屬於我們的罪孽。',
+                        icon: `<svg viewBox="0 0 100 100" class="w-full h-full stroke-current fill-none" stroke-width="2"><path d="M50 20 L50 80 M20 40 L80 40" stroke-width="8" opacity="0.3"/><path d="M50 25 L50 75 M25 40 L75 40"/><circle cx="50" cy="40" r="12" fill="#151515" stroke="currentColor"/></svg>`
+                    }
+                ]
+            },
+            'WAW': {
+                color: '#3b82f6', // Blue
+                borderColor: 'border-blue-600',
+                shadowColor: 'shadow-[0_0_30px_rgba(59,130,246,0.1)]',
+                list: [
+                    {
+                        code: 'O-01-73',
+                        name: 'The Knight of Despair',
+                        zhName: '絕望騎士',
+                        quote: '雖然她沒能守護住約定，但那份執念卻讓她永遠無法安息。',
+                        desc: '曾經守護著正義的魔法少女，如今已墮落為絕望的騎士。她身上插滿了劍，眼淚從未停止流淌。如果得到她的祝福，你將獲得強大的保護；但如果未能回應她的期待，那把劍將會刺向被守護者。',
+                        icon: `<svg viewBox="0 0 100 100" class="w-full h-full stroke-current fill-none" stroke-width="2"><path d="M50 10 L50 90"/><path d="M35 30 L65 30" stroke-width="3"/><path d="M50 20 Q30 50 50 80 Q70 50 50 20 Z" fill="currentColor" fill-opacity="0.1" stroke-dasharray="2,2"/></svg>`
+                    }
+                ]
+            },
+            'ALEPH': {
+                color: '#dc2626', // Red
+                borderColor: 'border-red-600',
+                shadowColor: 'shadow-[0_0_50px_rgba(220,38,38,0.2)]',
+                list: [
+                    {
+                        code: 'O-06-20',
+                        name: 'Nothing There',
+                        zhName: '一無所有',
+                        quote: '它想要成為人類。你好？你好？',
+                        desc: '一個沒有固定型態的肉塊，不斷地擬態成人類的樣子。它擁有極高的再生能力與破壞力。它會學習員工的語言，模仿他們的聲音，最終穿上他們的「皮」。這不是出於惡意，僅僅是本能的渴望。',
+                        icon: `<svg viewBox="0 0 100 100" class="w-full h-full fill-current"><path d="M30 40 Q20 20 50 20 Q80 20 70 40 Q90 60 70 80 Q50 100 30 80 Q10 60 30 40"><animate attributeName="d" values="M30 40 Q20 20 50 20 Q80 20 70 40 Q90 60 70 80 Q50 100 30 80 Q10 60 30 40; M35 45 Q25 25 50 15 Q75 25 65 45 Q85 65 65 85 Q50 95 35 85 Q15 65 35 45; M30 40 Q20 20 50 20 Q80 20 70 40 Q90 60 70 80 Q50 100 30 80 Q10 60 30 40" dur="0.5s" repeatCount="indefinite"/></path><text x="50" y="55" text-anchor="middle" font-size="10" fill="black" font-weight="bold">HELLO</text></svg>`
+                    }
+                ]
+            }
+        };
+
+        const abnoLevelModal = document.getElementById('abno-level-modal');
+        const abnoListContainer = document.getElementById('abno-list-container');
+
+        function openAbnoLevelModal(level) {
+            const data = abnormalitiesData[level];
+            if (!data) return;
+
+            // 1. 設定視窗主題色
+            const modalContent = document.getElementById('abno-level-content');
+            const header = document.getElementById('abno-level-header');
+            const footerLine = document.getElementById('abno-level-footer-line');
+            
+            modalContent.className = `relative w-full max-w-7xl h-[85vh] bg-[#0d0d0d] border-2 flex flex-col overflow-hidden transition-all duration-300 ${data.borderColor} ${data.shadowColor}`;
+            header.style.borderBottomColor = data.color;
+            footerLine.style.backgroundColor = data.color;
+            
+            document.getElementById('abno-level-title').innerText = `${level} CLASS`;
+            document.getElementById('abno-level-title').style.color = data.color;
+            document.getElementById('abno-level-icon').innerText = level[0]; // 取首字母 Z, W, A
+            document.getElementById('abno-level-icon').style.color = data.color;
+            document.getElementById('abno-level-icon').style.opacity = '0.3';
+
+            // 2. 生成卡片 (Inject Cards)
+            abnoListContainer.innerHTML = ''; // 清空舊內容
+            
+            data.list.forEach(abno => {
+                const card = document.createElement('div');
+                card.className = `bg-[#151515] border border-gray-800 p-6 flex flex-col relative overflow-hidden group hover:border-white transition-colors duration-300`;
+                
+                // 動態設定 Hover 顏色
+                card.onmouseenter = () => { card.style.borderColor = data.color; };
+                card.onmouseleave = () => { card.style.borderColor = '#1f2937'; }; // gray-800
+
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <div class="w-32 h-32 text-gray-500">${abno.icon}</div>
+                    </div>
+                    <div class="flex justify-between items-center mb-4 relative z-10">
+                        <span class="font-cinzel font-bold text-2xl text-gray-500 group-hover:text-white transition-colors select-none">${abno.code}</span>
+                        <span class="text-[10px] font-mono border px-2 py-1 rounded" style="color:${data.color}; border-color:${data.color}">${level}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 font-cinzel relative z-10">${abno.name}</h3>
+                    <h4 class="text-sm text-gray-400 mb-4 font-bold relative z-10">${abno.zhName}</h4>
+                    <div class="w-full h-px bg-gray-800 mb-4 group-hover:bg-white/20 transition-colors"></div>
+                    <p class="text-gray-400 text-sm italic mb-4 opacity-80">"${abno.quote}"</p>
+                    <p class="text-gray-500 text-xs leading-relaxed text-justify line-clamp-4 hover:line-clamp-none transition-all duration-300">${abno.desc}</p>
+                `;
+                abnoListContainer.appendChild(card);
+            });
+
+            abnoLevelModal.classList.add('active');
+        }
+
+        function closeAbnoLevelModal() {
+            abnoLevelModal.classList.remove('active');
+        }
+        
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const hero = document.querySelector('header');
