@@ -1185,7 +1185,31 @@
             </div>
         </div>
     </div>
+    <div id="abno-level-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeAbnoLevelModal()"></div>
+        
+        <div id="abno-level-content" class="relative w-full max-w-7xl h-[85vh] bg-[#0d0d0d] border-2 shadow-2xl flex flex-col overflow-hidden transition-all duration-300">
+            
+            <div id="abno-level-header" class="p-6 border-b flex justify-between items-center bg-[#111] relative overflow-hidden">
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                <div class="flex items-center space-x-4 relative z-10">
+                    <div id="abno-level-icon" class="text-4xl font-black font-cinzel select-none"></div>
+                    <div>
+                        <h2 id="abno-level-title" class="text-3xl font-bold font-cinzel tracking-widest text-white">LEVEL</h2>
+                        <p class="text-[10px] text-gray-500 font-mono tracking-[0.5em] uppercase">CONTAINMENT UNITS</p>
+                    </div>
+                </div>
+                <button onclick="closeAbnoLevelModal()" class="relative z-10 text-gray-500 hover:text-white font-mono border border-gray-700 hover:border-white px-4 py-2 transition-all">
+                    CLOSE TERMINAL
+                </button>
+            </div>
 
+            <div id="abno-list-container" class="flex-1 p-8 overflow-y-auto custom-scrollbar bg-[#0a0a0a] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+
+            <div class="h-2 w-full" id="abno-level-footer-line"></div>
+        </div>
+    </div>
     <script>
         // Core Logic for View Switching
         const limbusView = document.getElementById('limbus-view');
