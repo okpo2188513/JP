@@ -992,16 +992,19 @@
 
                 <div id="library-stage-content" class="relative z-10 w-full px-8 md:px-16 flex flex-col items-center justify-center h-full text-center">
                     
-                    <div id="invitation-card" class="animate-slide-up cursor-pointer group" onclick="revealLibraryTree()">
+                    <div id="invitation-card" class="animate-slide-up cursor-pointer group transition-all duration-700 ease-in-out" onclick="revealLibraryTree()">
                         
                         <div class="mb-8 flex justify-center relative transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                             <div class="absolute inset-0 bg-[#ffd700] blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
                             
                             <svg width="120" height="120" viewBox="0 0 100 100" fill="none" stroke="#ffd700" stroke-width="0.8" class="drop-shadow-[0_0_15px_rgba(255,215,0,0.3)] bg-[#050510]/50 backdrop-blur-sm rounded-lg border border-[#ffd700]/20 p-4 transition-all duration-500 group-hover:border-[#ffd700] group-hover:shadow-[0_0_30px_rgba(255,215,0,0.6)]">
                                 <rect x="25" y="20" width="50" height="60" rx="2" />
-                                <path d="M25 20 L50 45 L75 20" /> <path d="M40 50 L60 50" stroke-width="0.5"/> <path d="M40 58 L60 58" stroke-width="0.5"/>
+                                <path d="M25 20 L50 45 L75 20" />
+                                <path d="M40 50 L60 50" stroke-width="0.5"/>
+                                <path d="M40 58 L60 58" stroke-width="0.5"/>
                                 <path d="M40 66 L50 66" stroke-width="0.5"/>
-                                <circle cx="50" cy="45" r="4" fill="#ffd700" class="group-hover:animate-pulse" /> </svg>
+                                <circle cx="50" cy="45" r="4" fill="#ffd700" class="group-hover:animate-pulse" />
+                            </svg>
                             
                             <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-[10px] font-mono text-[#ffd700] opacity-0 group-hover:opacity-100 transition-all tracking-widest whitespace-nowrap">
                                 [ OPEN INVITATION ]
@@ -2762,7 +2765,7 @@
             }, 800);
         }
 
-  // ================= Library of Ruina Logic (Complete & Reset Fix) =================
+  // ================= Library of Ruina Logic (Smoother Transition) =================
         
         const libraryFloors = [
             { id: "kether", name: "General Works", librarian: "Roland", title: "Patron Librarian", color: "#CCCCCC", layer: "Kether", desc: "總類層。這座圖書館的根基。無論是雜務還是接待，這裡都是起點。Roland，一名自稱九階收尾人的男子，在這裡協助 Angela 尋找那本至高之書。", quote: "這就是這該死的圖書館嗎？" },
@@ -2808,29 +2811,30 @@
             container.appendChild(spacer);
         }
 
-        // 展開圖書館 (互動觸發)
+        // 展開圖書館 (優化動畫版)
         function revealLibraryTree() {
             const leftPanel = document.getElementById('library-left-panel');
             const rightPanel = document.getElementById('library-right-panel');
             const inviteCard = document.getElementById('invitation-card');
 
-            // 1. 左側面板展開
+            // 1. 邀請函優雅退場 (淡出 + 縮小)
+            // 讓它在面板移動前就開始消失，避免被擠壓的突兀感
+            inviteCard.style.opacity = '0';
+            inviteCard.style.transform = 'scale(0.9) translateY(-20px)';
+            
+            // 2. 左側面板展開
             leftPanel.classList.remove('w-0', 'opacity-0');
             leftPanel.classList.add('w-full', 'md:w-1/3', 'lg:w-1/4', 'opacity-100');
             leftPanel.style.borderRightColor = 'rgba(255, 215, 0, 0.2)'; 
 
-            // 2. 右側面板縮小
+            // 3. 右側面板縮小
             rightPanel.classList.remove('w-full');
             rightPanel.classList.add('w-full', 'md:w-2/3', 'lg:w-3/4');
 
-            // 3. 邀請函淡出
-            inviteCard.style.opacity = '0';
-            inviteCard.style.transform = 'translateY(-20px)';
-            
-            // 4. 自動選擇 Kether
+            // 4. 等待過渡後顯示 Kether
             setTimeout(() => {
                 selectLibraryFloor(libraryFloors[0]);
-            }, 800);
+            }, 700); // 時間稍微縮短配合淡出
         }
 
         function selectLibraryFloor(floor) {
@@ -2895,7 +2899,7 @@
             }, 400);
         }
 
-        // ★★★ 關鍵修改：強制重置為歡迎頁面 ★★★
+        // 強制重置為歡迎頁面
         switchToLibraryView = function() {
             closeAngelaModal();
             lobotomyView.style.opacity = '0';
@@ -2912,17 +2916,17 @@
 
                 // 2. 強制重置：右側面板全螢幕
                 const rightPanel = document.getElementById('library-right-panel');
-                rightPanel.classList.remove('w-full', 'md:w-2/3', 'lg:w-3/4'); // 移除分欄寬度
-                rightPanel.classList.add('w-full'); // 加回全寬
+                rightPanel.classList.remove('w-full', 'md:w-2/3', 'lg:w-3/4'); 
+                rightPanel.classList.add('w-full'); 
 
                 // 3. 強制重置：背景圖復原
                 const stageBg = document.getElementById('library-stage-bg');
                 stageBg.style.transform = 'scale(1)';
-                stageBg.style.filter = 'grayscale(100%) opacity(30%)'; // 恢復到初始灰階
+                stageBg.style.filter = 'grayscale(100%) opacity(30%)';
 
-                // 4. 強制重置：插入初始邀請函 HTML (覆蓋掉之前的樓層內容)
+                // 4. 強制重置：插入初始邀請函 HTML (包含動畫類別)
                 document.getElementById('library-stage-content').innerHTML = `
-                    <div id="invitation-card" class="animate-slide-up cursor-pointer group" onclick="revealLibraryTree()">
+                    <div id="invitation-card" class="animate-slide-up cursor-pointer group transition-all duration-700 ease-in-out" onclick="revealLibraryTree()">
                         <div class="mb-8 flex justify-center relative transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                             <div class="absolute inset-0 bg-[#ffd700] blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
                             <svg width="120" height="120" viewBox="0 0 100 100" fill="none" stroke="#ffd700" stroke-width="0.8" class="drop-shadow-[0_0_15px_rgba(255,215,0,0.3)] bg-[#050510]/50 backdrop-blur-sm rounded-lg border border-[#ffd700]/20 p-4 transition-all duration-500 group-hover:border-[#ffd700] group-hover:shadow-[0_0_30px_rgba(255,215,0,0.6)]">
@@ -2951,7 +2955,6 @@
                     </div>
                 `;
 
-                // 渲染左側樹 (準備好但保持隱藏狀態)
                 renderLibraryTree();
                 
                 void document.getElementById('library-view').offsetWidth;
