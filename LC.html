@@ -953,8 +953,7 @@
         <div class="absolute inset-0 z-0 pointer-events-none">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#1a1a2e_0%,_#050510_100%)]"></div>
             <div class="absolute inset-0 opacity-20" style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#ffd700]/5 rounded-full animate-[spin_60s_linear_infinite]"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#ffd700]/5 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] border border-[#ffd700]/5 rounded-full animate-[spin_120s_linear_infinite]"></div>
         </div>
 
         <div class="absolute top-0 left-0 w-full h-20 flex justify-between items-center px-8 z-50 bg-gradient-to-b from-[#050510] to-transparent pointer-events-none">
@@ -989,34 +988,38 @@
             </div>
 
             <div class="w-full md:w-2/3 lg:w-3/4 h-2/3 md:h-full relative flex items-center justify-center overflow-hidden">
-                <div id="library-stage-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out transform scale-105 opacity-40 blur-[2px]" style="background-image: url('https://limbuscompany.wiki.gg/images/4/4b/Library_of_Ruina_Background.png');"></div>
-                
-                <div class="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay" style="background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');"></div>
+                <div id="library-stage-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out opacity-30 grayscale" style="background-image: url('https://limbuscompany.wiki.gg/images/4/4b/Library_of_Ruina_Background.png');"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/50 to-transparent"></div>
 
-                <div id="library-stage-content" class="relative z-10 w-full max-w-4xl px-8 md:px-16 flex flex-col items-center">
+                <div id="library-stage-content" class="relative z-10 w-full px-8 md:px-16 flex flex-col items-center justify-center h-full text-center">
                     
-                    <div class="border border-[#ffd700]/30 bg-[#0a0a15]/90 p-1 md:p-2 shadow-[0_0_50px_rgba(255,215,0,0.1)] transform transition-all hover:scale-105 duration-500 backdrop-blur-sm max-w-lg w-full">
-                        <div class="border border-[#ffd700]/50 p-8 md:p-12 flex flex-col items-center text-center relative overflow-hidden">
-                            <div class="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#ffd700]"></div>
-                            <div class="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#ffd700]"></div>
-                            <div class="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#ffd700]"></div>
-                            <div class="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#ffd700]"></div>
+                    <div class="animate-slide-up">
+                        <div class="mb-12 animate-pulse flex justify-center">
+                            <svg width="100" height="100" viewBox="0 0 100 100" fill="none" stroke="#ffd700" stroke-width="1" class="drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]">
+                                <rect x="20" y="15" width="60" height="70" />
+                                <path d="M20 15 L50 40 L80 15" />
+                                <path d="M50 50 L50 70" stroke-dasharray="2,2"/>
+                                <circle cx="50" cy="50" r="5" fill="#ffd700" />
+                            </svg>
+                        </div>
 
-                            <div class="text-[#ffd700] text-4xl mb-6 opacity-80">✉</div>
-                            
-                            <h2 class="text-3xl md:text-4xl font-bold font-cinzel text-[#e5e5e5] mb-4">
-                                INVITATION
-                            </h2>
-                            <div class="w-12 h-px bg-[#ffd700] mb-6"></div>
-                            <p class="text-gray-400 font-serif italic leading-loose text-sm md:text-base">
-                                "May you find your book in this place."<br>
-                                願你在這裡找到你的書。
-                            </p>
-                            
-                            <div class="mt-8 text-[10px] font-mono text-[#ffd700]/60 uppercase tracking-widest">
-                                Please select a floor to proceed
-                            </div>
+                        <h1 class="text-5xl md:text-8xl font-bold mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-[#ffd700] to-[#b8860b]" style="filter: drop-shadow(0 0 30px rgba(255,215,0,0.2));">
+                            Library of Ruina
+                        </h1>
+                        
+                        <h2 class="text-xl md:text-3xl font-light tracking-[0.5em] mb-12 text-gray-400">
+                            廢墟圖書館
+                        </h2>
+
+                        <div class="w-24 h-px bg-[#ffd700]/50 mx-auto mb-12"></div>
+
+                        <div class="max-w-2xl mx-auto space-y-4 text-gray-300 text-lg font-light italic">
+                            <p>"願你在這裡找到你的書。"</p>
+                            <p class="text-sm text-gray-500 not-italic font-mono">May you find your book in this place.</p>
+                        </div>
+                        
+                        <div class="mt-16 text-[10px] font-mono text-[#ffd700]/40 uppercase tracking-widest animate-pulse">
+                            Select a Floor to Begin Reception
                         </div>
                     </div>
 
@@ -2758,7 +2761,7 @@
             }, 800);
         }
 
-   // ================= Library of Ruina Logic (Polished) =================
+   // ================= Library of Ruina Logic (Refined & Merged) =================
         
         const libraryFloors = [
             { id: "kether", name: "General Works", librarian: "Roland", title: "Patron Librarian", color: "#CCCCCC", layer: "Kether", desc: "總類層。這座圖書館的根基。無論是雜務還是接待，這裡都是起點。Roland，一名自稱九階收尾人的男子，在這裡協助 Angela 尋找那本至高之書。", quote: "這就是這該死的圖書館嗎？" },
@@ -2773,31 +2776,23 @@
             { id: "hokma", name: "Religion", librarian: "Hokma", title: "Patron Librarian of Religion", color: "#B0B0B0", layer: "Atziluth", desc: "宗教層。時間與信仰的殿堂。Hokma 依然忠誠於那唯一的信仰，並守護著圖書館的時間流動。", quote: "時間的流逝是公平的，也是無情的。" }
         ];
 
-        // 渲染生命之樹 (Refined Tree Node)
         function renderLibraryTree() {
             const container = document.getElementById('library-tree-container');
-            // 重繪中軸線
             container.innerHTML = '<div class="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ffd700]/30 to-transparent -translate-x-1/2"></div>'; 
 
             libraryFloors.forEach((floor, index) => {
                 const node = document.createElement('div');
-                // 調整間距，讓樹看起來更修長
                 node.className = "relative z-10 w-full flex flex-col items-center group cursor-pointer transition-all duration-300 py-6"; 
                 node.onclick = () => selectLibraryFloor(floor);
 
-                // 根據層級設定不同的節點大小
                 let sizeClass = "w-12 h-12";
-                if (floor.layer === "Kether") sizeClass = "w-16 h-16"; // 總類層大一點
+                if (floor.layer === "Kether") sizeClass = "w-16 h-16"; 
 
                 node.innerHTML = `
                     <div class="${sizeClass} rounded-full border border-[#ffd700]/40 bg-[#050510] flex items-center justify-center relative transition-all duration-500 group-hover:border-[#ffd700] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] shadow-[0_0_10px_rgba(0,0,0,0.8)]">
-                        
                         <div class="absolute inset-1 rounded-full border border-[#ffd700]/10 group-hover:border-[#ffd700]/30 transition-all"></div>
-                        
                         <span class="text-[#ffd700] font-bold font-cinzel opacity-60 group-hover:opacity-100 transition-opacity text-sm">${floor.name[0]}</span>
-                        
                         <div id="indicator-${floor.id}" class="absolute inset-[-4px] rounded-full border border-[#ffd700] opacity-0 scale-90 transition-all duration-500"></div>
-                        
                         <div class="absolute -top-6 w-px h-6 bg-gradient-to-b from-transparent to-[#ffd700]/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                     
@@ -2808,14 +2803,11 @@
                 `;
                 container.appendChild(node);
             });
-            
-            // 底部墊高
             const spacer = document.createElement('div');
             spacer.className = "h-24";
             container.appendChild(spacer);
         }
 
-        // 選擇樓層 (Refined Stage Display)
         function selectLibraryFloor(floor) {
             const stageContent = document.getElementById('library-stage-content');
             const stageBg = document.getElementById('library-stage-bg');
@@ -2827,7 +2819,6 @@
                     indicator.style.opacity = (f.id === floor.id) ? '1' : '0';
                     indicator.style.transform = (f.id === floor.id) ? 'scale(1)' : 'scale(0.9)';
                     indicator.style.boxShadow = (f.id === floor.id) ? `0 0 15px ${floor.color}66` : 'none';
-                    // 改變節點邊框顏色
                     indicator.parentElement.style.borderColor = (f.id === floor.id) ? floor.color : 'rgba(255,215,0,0.4)';
                 }
             });
@@ -2836,14 +2827,13 @@
             stageContent.style.opacity = '0';
             stageContent.style.transform = 'translateY(10px)';
             
-            // 背景稍微放大模糊
             stageBg.style.transform = 'scale(1.1)';
             stageBg.style.filter = 'blur(4px) grayscale(80%)';
 
             setTimeout(() => {
-                // 3. 更新內容 (更像書本排版)
+                // 3. 更新內容 (雜誌風格排版)
                 stageContent.innerHTML = `
-                    <div class="animate-slide-up w-full text-left">
+                    <div class="animate-slide-up w-full text-left max-w-4xl mx-auto">
                         <div class="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-[#ffd700]/30 pb-4 mb-8">
                             <div>
                                 <div class="text-[#ffd700] font-mono text-xs tracking-[0.2em] mb-2 opacity-70">FLOOR OF ${floor.name.toUpperCase()}</div>
@@ -2862,12 +2852,10 @@
                                     "${floor.quote}"
                                 </blockquote>
                             </div>
-                            
                             <div class="md:w-2/3">
                                 <p class="text-gray-400 text-sm md:text-base leading-loose font-light text-justify">
                                     ${floor.desc}
                                 </p>
-                                
                                 <div class="mt-12 flex items-center space-x-6">
                                     <button class="px-8 py-3 bg-[#ffd700] text-black font-cinzel font-bold text-sm tracking-widest hover:bg-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
                                         ENTER FLOOR
@@ -2880,19 +2868,15 @@
                     </div>
                 `;
                 
-                // 背景恢復
                 stageBg.style.transform = 'scale(1.05)';
                 stageBg.style.filter = 'blur(0px) grayscale(20%)';
-                // 這裡可以加入換圖邏輯：stageBg.style.backgroundImage = ...
 
-                // 4. 切換動畫 (淡入)
                 stageContent.style.opacity = '1';
                 stageContent.style.transform = 'translateY(0)';
             }, 400);
         }
 
-        // 修改原本的 switch logic，加入渲染樹的步驟
-        // 確保覆蓋原本的 switchToLibraryView
+        // 修改切換邏輯：加入渲染樹的步驟，但不自動選擇樓層 (保持歡迎頁面)
         switchToLibraryView = function() {
             closeAngelaModal();
             lobotomyView.style.opacity = '0';
@@ -2901,13 +2885,25 @@
                 lobotomyView.classList.add('hidden');
                 document.getElementById('library-view').classList.remove('hidden');
                 
-                // 渲染左側樹狀導航
+                // 渲染左側樹狀導航 (但不觸發 selectLibraryFloor)
                 renderLibraryTree();
                 
                 void document.getElementById('library-view').offsetWidth;
                 document.getElementById('library-view').style.opacity = '1';
                 window.scrollTo(0,0);
             }, 1000);
+        }
+        
+        function returnToLobotomyFromLibrary() {
+            const libraryView = document.getElementById('library-view');
+            libraryView.style.opacity = '0';
+            setTimeout(() => {
+                libraryView.classList.add('hidden');
+                lobotomyView.classList.remove('hidden');
+                void lobotomyView.offsetWidth;
+                lobotomyView.style.opacity = '1';
+                window.scrollTo(0,0);
+            }, 800);
         }
     </script>
 </body>
