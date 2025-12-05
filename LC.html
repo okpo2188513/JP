@@ -2728,43 +2728,7 @@
             layer1.style.display = 'block';
             setTimeout(() => layer1.style.opacity = '1', 50);
         }
-        // ================= Library View Logic =================
-        const libraryView = document.getElementById('library-view');
-
-        function switchToLibraryView() {
-            // 1. 關閉當前的 Angela 視窗
-            closeAngelaModal();
-            
-            // 2. 淡出腦葉公司視圖
-            lobotomyView.style.opacity = '0';
-            
-            setTimeout(() => {
-                // 3. 切換隱藏狀態
-                lobotomyView.classList.add('hidden');
-                libraryView.classList.remove('hidden');
-                
-                // Trigger reflow (重繪)
-                void libraryView.offsetWidth;
-                
-                // 4. 淡入圖書館視圖
-                libraryView.style.opacity = '1';
-                window.scrollTo(0,0);
-            }, 1000); // 給予足夠的過場時間
-        }
-
-        function returnToLobotomyFromLibrary() {
-            libraryView.style.opacity = '0';
-            
-            setTimeout(() => {
-                libraryView.classList.add('hidden');
-                lobotomyView.classList.remove('hidden');
-                
-                void lobotomyView.offsetWidth;
-                lobotomyView.style.opacity = '1';
-                window.scrollTo(0,0);
-            }, 800);
-        }
-
+        
   // ================= Library of Ruina Logic (Smoother Transition) =================
         
         const libraryFloors = [
