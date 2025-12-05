@@ -792,9 +792,21 @@
                         表面上，我們是世界之翼的一員；實際上，這座深埋地下的設施是一個巨大的儀式場。為了治療人類心靈的疾病，我們在無盡的循環中尋找著救贖的答案。
                     </p>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="border border-gray-700 p-4 bg-[#0f0f0f]">
-                            <div class="text-xs text-gray-500 uppercase mb-2">Current Manager</div>
-                            <div class="text-xl text-white font-bold">X (Ayin)</div>
+                        <div onclick="openAyinModal()" class="border border-gray-700 p-4 bg-[#0f0f0f] cursor-pointer group hover:border-white transition-all duration-500 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-white/5 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                            
+                            <div class="relative z-10">
+                                <div class="text-xs text-gray-500 uppercase mb-2 group-hover:text-gray-300">Current Manager</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-xl text-white font-bold font-cinzel group-hover:text-shadow-white transition-all">X</div>
+                                    <div class="text-[10px] bg-gray-800 text-gray-400 px-2 py-1 rounded group-hover:bg-white group-hover:text-black transition-colors font-mono">
+                                        VIEW RECORD
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-gray-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-700 font-mono tracking-widest">
+                                    TRUE IDENTITY: A___
+                                </div>
+                            </div>
                         </div>
                         <div class="border border-gray-700 p-4 bg-[#0f0f0f]">
                             <div class="text-xs text-gray-500 uppercase mb-2">AI Assistant</div>
@@ -1205,6 +1217,104 @@
                              ACTIVE
                          </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ayin-modal" class="modal-overlay">
+        <div class="absolute inset-0 cursor-pointer" onclick="closeAyinModal()"></div>
+        
+        <div id="ayin-content" class="relative w-full max-w-6xl h-[85vh] bg-black border-2 border-white/20 shadow-[0_0_100px_rgba(255,255,255,0.1)] flex flex-col md:flex-row overflow-hidden transition-all duration-1000">
+            <button onclick="closeAyinModal()" class="absolute top-4 right-4 z-50 text-gray-500 hover:text-white font-mono border border-gray-800 rounded-full w-8 h-8 flex items-center justify-center bg-black">✕</button>
+
+            <div class="w-full md:w-1/3 h-1/3 md:h-full relative bg-[#050505] border-b md:border-b-0 md:border-r border-gray-800 flex flex-col items-center justify-center p-8 overflow-hidden group">
+                <div class="absolute inset-0 opacity-10 pointer-events-none">
+                    <svg class="w-full h-full"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(#noiseFilter)"/></svg>
+                </div>
+                
+                <div class="relative z-10 text-center">
+                    <div id="ayin-avatar-placeholder" class="w-48 h-48 border-2 border-gray-700 rounded-full flex items-center justify-center mb-8 relative overflow-hidden bg-gray-900 mx-auto">
+                        <div id="icon-x" class="text-8xl font-black text-gray-500 font-cinzel absolute inset-0 flex items-center justify-center transition-all duration-700 scale-100 opacity-100">X</div>
+                        <div id="icon-a" class="text-8xl font-black text-white font-cinzel absolute inset-0 flex items-center justify-center transition-all duration-700 scale-150 opacity-0 blur-sm shadow-[0_0_30px_white]">A</div>
+                    </div>
+                    
+                    <h2 id="ayin-title" class="text-4xl font-bold text-white font-cinzel tracking-[0.2em] mb-2">MANAGER <span class="text-red-500">X</span></h2>
+                    <div id="ayin-subtitle" class="text-xs font-mono text-gray-500 tracking-widest uppercase">Cognition Filter: Active</div>
+                </div>
+
+                <div class="mt-12 w-full">
+                    <button id="ayin-reveal-btn" onclick="revealAyinTrueSelf()" class="w-full border border-gray-600 text-gray-400 py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black hover:border-white transition-all duration-500 relative overflow-hidden group">
+                        <span class="relative z-10">DECRYPT MEMORY ARCHIVE</span>
+                        <div class="absolute inset-0 bg-white transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full md:w-2/3 h-2/3 md:h-full bg-[#0a0a0a] relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 text-[200px] font-black text-white/5 font-cinzel select-none leading-none pointer-events-none">A</div>
+
+                <div class="p-10 h-full overflow-y-auto custom-scrollbar relative z-10">
+                    
+                    <div id="ayin-data-x" class="space-y-8 transition-all duration-700 opacity-100 translate-x-0">
+                        <div class="border-l-4 border-gray-600 pl-6">
+                            <h3 class="text-2xl font-bold text-white mb-2">工作職責</h3>
+                            <p class="text-gray-400 text-sm leading-loose text-justify">
+                                負責腦葉公司總部的日常能源生產管理。通過監控螢幕指揮文職與各部門 Sephirah，確保每日腦啡肽 (Enkephalin) 產量達標。
+                                <br><br>
+                                權限等級：<span class="text-red-500 font-bold">最高 (Level 5)</span>。
+                                <br>
+                                備註：該管理者似乎失去了大部分記憶，需要 AI 助手 Angela 的輔助。
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-[#111] p-4 border border-gray-800">
+                                <div class="text-[10px] text-gray-500 uppercase mb-1">Assignment</div>
+                                <div class="text-white font-mono">Day 1 - Day 50</div>
+                            </div>
+                            <div class="bg-[#111] p-4 border border-gray-800">
+                                <div class="text-[10px] text-gray-500 uppercase mb-1">Mental Status</div>
+                                <div class="text-white font-mono">Unstable</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12 text-center text-gray-600 font-mono text-xs">
+                            <p>WARNING: DEEPER DATA LAYERS ENCRYPTED.</p>
+                            <p>AUTHORIZATION REQUIRED: KETHER CLEARANCE</p>
+                        </div>
+                    </div>
+
+                    <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a]">
+                        <div class="border-l-4 border-yellow-500 pl-6">
+                            <h3 class="text-3xl font-bold text-white mb-4 font-cinzel">Ayin <span class="text-sm text-gray-500 font-normal ml-2">(The Architect)</span></h3>
+                            <blockquote class="text-xl italic text-gray-300 font-light mb-6">
+                                "這條路將鋪滿灰燼與罪惡，但如果這一切的盡頭能有光芒..."
+                            </blockquote>
+                            <p class="text-gray-400 text-sm leading-loose text-justify font-light">
+                                腦葉公司的創始人，光之種計畫的設計者。
+                                <br><br>
+                                在愛人 Carmen 死後，為了完成她「治癒人類心靈」的遺願，他陷入了瘋狂的執著。他建造了這座地下設施，甚至不惜將 Carmen 的大腦製成 Cogito 工廠，創造出了異想體與 E.G.O。
+                                <br><br>
+                                為了客觀地觀測並完成劇本，他將自己的記憶分割，創造了無數個「X」。這是一場為了斬斷絕望循環而進行的、長達萬年的自我獻祭。
+                            </p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="border-t border-yellow-500/50 pt-4">
+                                <div class="text-yellow-500 font-bold mb-1 font-cinzel">SEED OF LIGHT</div>
+                                <p class="text-[10px] text-gray-500">旨在讓所有人覺醒自我的宏大計畫。</p>
+                            </div>
+                            <div class="border-t border-yellow-500/50 pt-4">
+                                <div class="text-yellow-500 font-bold mb-1 font-cinzel">ANGELA</div>
+                                <p class="text-[10px] text-gray-500">依照 Carmen 形象製造的 AI，他眼中的「失敗品」。</p>
+                            </div>
+                            <div class="border-t border-yellow-500/50 pt-4">
+                                <div class="text-yellow-500 font-bold mb-1 font-cinzel">KETHER</div>
+                                <p class="text-[10px] text-gray-500">所有的起點與終點。直面恐懼，創造未來。</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -2190,6 +2300,95 @@
 
         function closeSephirahModal() {
             sephirahModal.classList.remove('active');
+        }
+        // ================= Ayin Modal Logic =================
+        const ayinModal = document.getElementById('ayin-modal');
+        let ayinRevealed = false; // 追蹤是否已經解密
+
+        function openAyinModal() {
+            // 每次打開時重置為初始狀態 (X)
+            resetAyinView();
+            ayinModal.classList.add('active');
+        }
+
+        function closeAyinModal() {
+            ayinModal.classList.remove('active');
+        }
+
+        function revealAyinTrueSelf() {
+            if (ayinRevealed) return;
+            ayinRevealed = true;
+
+            // 1. UI 變化：按鈕隱藏
+            const btn = document.getElementById('ayin-reveal-btn');
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+
+            // 2. 左側變化：圖標 X -> A
+            document.getElementById('icon-x').classList.remove('scale-100', 'opacity-100');
+            document.getElementById('icon-x').classList.add('scale-50', 'opacity-0');
+            
+            document.getElementById('icon-a').classList.remove('scale-150', 'opacity-0', 'blur-sm');
+            document.getElementById('icon-a').classList.add('scale-100', 'opacity-100', 'blur-0');
+            document.getElementById('icon-a').style.textShadow = "0 0 20px rgba(255,255,255,0.8)";
+
+            // 3. 文字變化
+            document.getElementById('ayin-title').innerHTML = 'THE <span class="text-yellow-500">ARCHITECT</span>';
+            document.getElementById('ayin-subtitle').innerText = 'System: Kether Layer // Unlocked';
+            document.getElementById('ayin-subtitle').style.color = '#eab308'; // Yellow
+
+            // 4. 右側內容切換
+            const dataX = document.getElementById('ayin-data-x');
+            const dataA = document.getElementById('ayin-data-a');
+
+            dataX.style.opacity = '0';
+            dataX.style.transform = 'translateX(-20px)';
+            
+            setTimeout(() => {
+                dataX.style.display = 'none'; // 完全隱藏舊內容以防點擊干擾
+                
+                dataA.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none');
+                dataA.classList.add('opacity-100', 'translate-x-0', 'pointer-events-auto');
+            }, 500);
+            
+            // 邊框發光
+            document.getElementById('ayin-content').style.borderColor = '#ffffff';
+            document.getElementById('ayin-content').style.boxShadow = '0 0 50px rgba(255,255,255,0.2)';
+        }
+
+        function resetAyinView() {
+            ayinRevealed = false;
+            
+            // 還原按鈕
+            const btn = document.getElementById('ayin-reveal-btn');
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+
+            // 還原圖標
+            document.getElementById('icon-x').className = 'text-8xl font-black text-gray-500 font-cinzel absolute inset-0 flex items-center justify-center transition-all duration-700 scale-100 opacity-100';
+            document.getElementById('icon-a').className = 'text-8xl font-black text-white font-cinzel absolute inset-0 flex items-center justify-center transition-all duration-700 scale-150 opacity-0 blur-sm shadow-[0_0_30px_white]';
+            document.getElementById('icon-a').style.textShadow = "none";
+
+            // 還原文字
+            document.getElementById('ayin-title').innerHTML = 'MANAGER <span class="text-red-500">X</span>';
+            document.getElementById('ayin-subtitle').innerText = 'Cognition Filter: Active';
+            document.getElementById('ayin-subtitle').style.color = '#6b7280'; // Gray
+
+            // 還原內容
+            const dataX = document.getElementById('ayin-data-x');
+            const dataA = document.getElementById('ayin-data-a');
+
+            dataX.style.display = 'block';
+            setTimeout(() => {
+                dataX.style.opacity = '1';
+                dataX.style.transform = 'translateX(0)';
+            }, 50);
+
+            dataA.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none');
+            dataA.classList.remove('opacity-100', 'translate-x-0', 'pointer-events-auto');
+
+            document.getElementById('ayin-content').style.borderColor = 'rgba(255,255,255,0.2)';
+            document.getElementById('ayin-content').style.boxShadow = '0 0 100px rgba(255,255,255,0.1)';
         }
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
