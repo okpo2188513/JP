@@ -2762,8 +2762,9 @@
             }, 800);
         }
 
-   // ================= Library of Ruina Logic (Refined & Merged) ================= 
-       const libraryFloors = [
+  // ================= Library of Ruina Logic (Complete & Reset Fix) =================
+        
+        const libraryFloors = [
             { id: "kether", name: "General Works", librarian: "Roland", title: "Patron Librarian", color: "#CCCCCC", layer: "Kether", desc: "總類層。這座圖書館的根基。無論是雜務還是接待，這裡都是起點。Roland，一名自稱九階收尾人的男子，在這裡協助 Angela 尋找那本至高之書。", quote: "這就是這該死的圖書館嗎？" },
             { id: "malkuth", name: "History", librarian: "Malkuth", title: "Patron Librarian of History", color: "#D88D28", layer: "Asiyah", desc: "歷史層。燃燒的書架記錄著過去的錯誤與榮耀。Malkuth 已經不再是那個急躁的部長，她學會了直面過去，即使那段歷史充滿了傷痕。", quote: "歷史不僅僅是記錄，更是銘記。" },
             { id: "yesod", name: "Tech. Sciences", librarian: "Yesod", title: "Patron Librarian of Tech. Sciences", color: "#603F93", layer: "Asiyah", desc: "科技層。充滿了齒輪與數據的冷酷空間。Yesod 依然追求理性，但他開始理解，有些東西是冰冷的邏輯無法計算的。", quote: "即使世界崩塌，理性的支柱不能倒下。" },
@@ -2778,8 +2779,6 @@
 
         function renderLibraryTree() {
             const container = document.getElementById('library-tree-container');
-            if(!container) return; // 安全檢查
-            
             container.innerHTML = '<div class="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ffd700]/30 to-transparent -translate-x-1/2"></div>'; 
 
             libraryFloors.forEach((floor, index) => {
@@ -2804,43 +2803,40 @@
                 `;
                 container.appendChild(node);
             });
-            
             const spacer = document.createElement('div');
             spacer.className = "h-24";
             container.appendChild(spacer);
         }
 
-        // 展開動畫 (點擊邀請函後觸發)
+        // 展開圖書館 (互動觸發)
         function revealLibraryTree() {
             const leftPanel = document.getElementById('library-left-panel');
             const rightPanel = document.getElementById('library-right-panel');
             const inviteCard = document.getElementById('invitation-card');
 
-            // 左側展開
+            // 1. 左側面板展開
             leftPanel.classList.remove('w-0', 'opacity-0');
             leftPanel.classList.add('w-full', 'md:w-1/3', 'lg:w-1/4', 'opacity-100');
             leftPanel.style.borderRightColor = 'rgba(255, 215, 0, 0.2)'; 
 
-            // 右側調整
+            // 2. 右側面板縮小
             rightPanel.classList.remove('w-full');
             rightPanel.classList.add('w-full', 'md:w-2/3', 'lg:w-3/4');
 
-            // 邀請函淡出
+            // 3. 邀請函淡出
             inviteCard.style.opacity = '0';
             inviteCard.style.transform = 'translateY(-20px)';
             
-            // 自動進入第一層
+            // 4. 自動選擇 Kether
             setTimeout(() => {
-                selectLibraryFloor(libraryFloors[0]); 
+                selectLibraryFloor(libraryFloors[0]);
             }, 800);
         }
 
-        // 選擇樓層顯示
         function selectLibraryFloor(floor) {
             const stageContent = document.getElementById('library-stage-content');
             const stageBg = document.getElementById('library-stage-bg');
             
-            // 更新左側選中狀態
             libraryFloors.forEach(f => {
                 const indicator = document.getElementById(`indicator-${f.id}`);
                 if (indicator) {
@@ -2851,7 +2847,6 @@
                 }
             });
 
-            // 切換內容
             stageContent.style.opacity = '0';
             stageContent.style.transform = 'translateY(10px)';
             stageBg.style.transform = 'scale(1.1)';
@@ -2900,32 +2895,33 @@
             }, 400);
         }
 
-        // 關鍵修改：強制重置為邀請函狀態的切換函數
+        // ★★★ 關鍵修改：強制重置為歡迎頁面 ★★★
         switchToLibraryView = function() {
             closeAngelaModal();
             lobotomyView.style.opacity = '0';
             
             setTimeout(() => {
                 lobotomyView.classList.add('hidden');
-                const libraryView = document.getElementById('library-view');
-                libraryView.classList.remove('hidden');
+                document.getElementById('library-view').classList.remove('hidden');
                 
-                // 1. 強制重置左側面板 (隱藏)
+                // 1. 強制重置：左側面板隱藏
                 const leftPanel = document.getElementById('library-left-panel');
                 leftPanel.classList.remove('w-full', 'md:w-1/3', 'lg:w-1/4', 'opacity-100');
                 leftPanel.classList.add('w-0', 'opacity-0');
                 leftPanel.style.borderRightColor = 'transparent';
 
-                // 2. 強制重置右側面板 (全螢幕)
+                // 2. 強制重置：右側面板全螢幕
                 const rightPanel = document.getElementById('library-right-panel');
-                rightPanel.classList.remove('w-full', 'md:w-2/3', 'lg:w-3/4');
-                rightPanel.classList.add('w-full');
+                rightPanel.classList.remove('w-full', 'md:w-2/3', 'lg:w-3/4'); // 移除分欄寬度
+                rightPanel.classList.add('w-full'); // 加回全寬
 
-                // 3. 強制重寫右側內容為「邀請函」 (這步最重要！)
-                const stageContent = document.getElementById('library-stage-content');
-                stageContent.style.opacity = '1';
-                stageContent.style.transform = 'none';
-                stageContent.innerHTML = `
+                // 3. 強制重置：背景圖復原
+                const stageBg = document.getElementById('library-stage-bg');
+                stageBg.style.transform = 'scale(1)';
+                stageBg.style.filter = 'grayscale(100%) opacity(30%)'; // 恢復到初始灰階
+
+                // 4. 強制重置：插入初始邀請函 HTML (覆蓋掉之前的樓層內容)
+                document.getElementById('library-stage-content').innerHTML = `
                     <div id="invitation-card" class="animate-slide-up cursor-pointer group" onclick="revealLibraryTree()">
                         <div class="mb-8 flex justify-center relative transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                             <div class="absolute inset-0 bg-[#ffd700] blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
@@ -2941,23 +2937,25 @@
                                 [ OPEN INVITATION ]
                             </div>
                         </div>
-                        <h1 class="text-5xl md:text-8xl font-bold mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-[#ffd700] to-[#b8860b]" style="filter: drop-shadow(0 0 30px rgba(255,215,0,0.2));">Library of Ruina</h1>
-                        <h2 class="text-xl md:text-3xl font-light tracking-[0.5em] mb-12 text-gray-400">廢墟圖書館</h2>
+                        <h1 class="text-5xl md:text-8xl font-bold mb-6 font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-[#ffd700] to-[#b8860b]" style="filter: drop-shadow(0 0 30px rgba(255,215,0,0.2));">
+                            Library of Ruina
+                        </h1>
+                        <h2 class="text-xl md:text-3xl font-light tracking-[0.5em] mb-12 text-gray-400">
+                            廢墟圖書館
+                        </h2>
                         <div class="w-24 h-px bg-[#ffd700]/50 mx-auto mb-12 group-hover:w-48 transition-all duration-700"></div>
-                        <div class="max-w-2xl mx-auto space-y-4 text-gray-300 text-lg font-light italic"><p>"願你在這裡找到你的書。"</p><p class="text-sm text-gray-500 not-italic font-mono">May you find your book in this place.</p></div>
+                        <div class="max-w-2xl mx-auto space-y-4 text-gray-300 text-lg font-light italic">
+                            <p>"願你在這裡找到你的書。"</p>
+                            <p class="text-sm text-gray-500 not-italic font-mono">May you find your book in this place.</p>
+                        </div>
                     </div>
                 `;
 
-                // 4. 背景重置
-                const stageBg = document.getElementById('library-stage-bg');
-                stageBg.style.transform = 'scale(1)';
-                stageBg.style.filter = 'grayscale(100%) opacity(0.3)';
-
-                // 5. 渲染左側樹 (雖然隱藏但先準備好)
+                // 渲染左側樹 (準備好但保持隱藏狀態)
                 renderLibraryTree();
                 
-                void libraryView.offsetWidth;
-                libraryView.style.opacity = '1';
+                void document.getElementById('library-view').offsetWidth;
+                document.getElementById('library-view').style.opacity = '1';
                 window.scrollTo(0,0);
             }, 1000);
         }
