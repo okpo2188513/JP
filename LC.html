@@ -2608,13 +2608,7 @@
             document.getElementById('ayin-content').style.borderColor = 'rgba(255,255,255,0.2)';
             document.getElementById('ayin-content').style.boxShadow = '0 0 100px rgba(255,255,255,0.1)';
         }
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const hero = document.querySelector('header');
-            if (scrollY < hero.offsetHeight) {
-                hero.style.backgroundPositionY = `${scrollY * 0.5}px`;
-            }
-        });
+        
         // ================= Angela Modal Logic =================
         const angelaModal = document.getElementById('angela-modal');
         let angelaGlitchActive = false;
@@ -2936,6 +2930,13 @@
                 window.scrollTo(0,0);
             }, 800);
         }
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const hero = document.querySelector('header');
+            if (scrollY < hero.offsetHeight) {
+                hero.style.backgroundPositionY = `${scrollY * 0.5}px`;
+            }
+        });
     </script>
 </body>
 </html>
