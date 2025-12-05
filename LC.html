@@ -878,6 +878,25 @@
                 </div>
             </div>
 
+            <div class="mb-24">
+                <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
+                    <span class="w-2 h-8 bg-lobotomy-amber mr-4"></span>
+                    OPERATIONAL RECORD: DAY 1 - 50
+                </h3>
+                
+                <div class="w-full h-2 bg-gray-800 mb-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 h-full bg-lobotomy-amber w-full animate-[scan_4s_linear_infinite]"></div>
+                </div>
+
+                <div id="day-grid-container" class="grid grid-cols-5 md:grid-cols-10 gap-2">
+                    </div>
+                
+                <div class="flex justify-between mt-2 text-[10px] font-mono text-gray-500">
+                    <span>INITIATION: DAY 1</span>
+                    <span class="text-lobotomy-amber animate-pulse">CURRENT STATUS: DAY 50 // COMPLETE</span>
+                </div>
+            </div>
+            
             <!-- Sephirah / Departments Grid -->
             <h3 class="text-2xl font-bold text-white mb-8 flex items-center">
                 <span class="w-2 h-8 bg-lobotomy-amber mr-4"></span>
@@ -2607,13 +2626,6 @@
             document.getElementById('ayin-content').style.borderColor = 'rgba(255,255,255,0.2)';
             document.getElementById('ayin-content').style.boxShadow = '0 0 100px rgba(255,255,255,0.1)';
         }
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const hero = document.querySelector('header');
-            if (scrollY < hero.offsetHeight) {
-                hero.style.backgroundPositionY = `${scrollY * 0.5}px`;
-            }
-        });
         // ================= Angela Modal Logic =================
         const angelaModal = document.getElementById('angela-modal');
         let angelaGlitchActive = false;
@@ -2935,6 +2947,57 @@
                 window.scrollTo(0,0);
             }, 800);
         }
+        // ================= Day 1-50 Progression Logic =================
+        const dayGrid = document.getElementById('day-grid-container');
+        
+        // 定義每個階段的部門 (每 5 天一個階段)
+        const deptPhases = [
+            "Control Team", "Information Team", "Training Team", "Safety Team", 
+            "Central Command", "Disciplinary Team", "Welfare Team", 
+            "Extraction Team", "Record Team", "Architecture Team"
+        ];
+
+        for (let i = 1; i <= 50; i++) {
+            const dayBox = document.createElement('div');
+            let statusClass = "bg-[#222] border-gray-800 text-gray-600 hover:border-lobotomy-amber hover:text-lobotomy-amber";
+            let statusText = "Standard Operation";
+            let deptIndex = Math.ceil(i / 5) - 1;
+            let deptName = deptPhases[deptIndex] || "Unknown";
+
+            // 特殊天數樣式 (Day 46-50)
+            if (i >= 46 && i <= 49) {
+                statusClass = "bg-red-900/20 border-red-900 text-red-500 hover:bg-red-900/40 hover:border-red-500 animate-pulse";
+                statusText = "⚠ KETHER TRIAL // WHITE ORDEAL";
+                deptName = "Architecture Team (Final Layer)";
+            } else if (i === 50) {
+                statusClass = "bg-yellow-900/20 border-yellow-600 text-yellow-500 hover:bg-yellow-900/40 hover:border-yellow-400";
+                statusText = "★ THE SEED OF LIGHT";
+            }
+
+            dayBox.className = `h-12 border ${statusClass} flex items-center justify-center font-mono text-xs cursor-pointer transition-all duration-300 relative group`;
+            
+            // Tooltip 內容
+            dayBox.innerHTML = `
+                <span class="relative z-10">${i}</span>
+                <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-black border border-gray-600 p-2 z-50 hidden group-hover:block shadow-xl pointer-events-none">
+                    <div class="text-white font-bold text-center mb-1">DAY ${i}</div>
+                    <div class="h-px w-full bg-gray-700 mb-1"></div>
+                    <div class="text-[10px] text-gray-400 text-center">${deptName}</div>
+                    <div class="text-[10px] text-lobotomy-amber text-center mt-1">${statusText}</div>
+                </div>
+            `;
+            
+            dayGrid.appendChild(dayBox);
+        }
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const hero = document.querySelector('header');
+            if (scrollY < hero.offsetHeight) {
+                hero.style.backgroundPositionY = `${scrollY * 0.5}px`;
+            }
+        });
     </script>
 </body>
 </html>
