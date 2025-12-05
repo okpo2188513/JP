@@ -1433,7 +1433,7 @@
                         </div>
                     </div>
 
-                   <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a] hidden">
+                  <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a] hidden">
                         <div class="border-l-4 border-yellow-500 pl-6">
                             <h3 class="text-3xl font-bold text-white mb-4 font-cinzel">Ayin <span class="text-sm text-gray-500 font-normal ml-2">(The Architect)</span></h3>
                             <blockquote class="text-xl italic text-gray-300 font-light mb-6">
@@ -2571,46 +2571,75 @@
             if (ayinRevealed) return;
             ayinRevealed = true;
 
-            // 1. UI 變化：按鈕隱藏
+            // ... (前半段 UI 變色邏輯省略，保持原樣) ...
             const btn = document.getElementById('ayin-reveal-btn');
             btn.style.opacity = '0';
             btn.style.pointerEvents = 'none';
-
-            // 2. 左側變化：圖標 X -> A
-            document.getElementById('icon-x').classList.remove('scale-100', 'opacity-100');
-            document.getElementById('icon-x').classList.add('scale-50', 'opacity-0');
             
-            document.getElementById('icon-a').classList.remove('scale-150', 'opacity-0', 'blur-sm');
-            document.getElementById('icon-a').classList.add('scale-100', 'opacity-100', 'blur-0');
-            document.getElementById('icon-a').style.textShadow = "0 0 20px rgba(255,255,255,0.8)";
+            // ... (圖標變換邏輯省略) ...
+            document.getElementById('icon-x').classList.add('scale-50', 'opacity-0');
+            document.getElementById('icon-a').classList.remove('opacity-0');
 
-            // 3. 文字變化
             document.getElementById('ayin-title').innerHTML = 'THE <span class="text-yellow-500">ARCHITECT</span>';
             document.getElementById('ayin-subtitle').innerText = 'System: Kether Layer // Unlocked';
-            document.getElementById('ayin-subtitle').style.color = '#eab308'; // Yellow
+            document.getElementById('ayin-subtitle').style.color = '#eab308'; 
 
-            // 4. 右側內容切換
             const dataX = document.getElementById('ayin-data-x');
             const dataA = document.getElementById('ayin-data-a');
 
+            // 1. 先讓 X 淡出
             dataX.style.opacity = '0';
             dataX.style.transform = 'translateX(-20px)';
             
-           setTimeout(() => {
-                dataX.style.display = 'none'; // 隱藏 X
+            setTimeout(() => {
+                // 2. 隱藏 X，顯示 A
+                dataX.style.display = 'none';
                 
-                // [修改] 先移除 hidden，再做動畫
-                dataA.classList.remove('hidden'); 
-                // 強制重繪，確保 transition 生效
-                void dataA.offsetWidth; 
+                dataA.classList.remove('hidden'); // ★ 關鍵：移除 hidden
+                void dataA.offsetWidth; // 觸發重繪
 
                 dataA.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none');
                 dataA.classList.add('opacity-100', 'translate-x-0', 'pointer-events-auto');
             }, 500);
             
-            // 邊框發光
             document.getElementById('ayin-content').style.borderColor = '#ffffff';
-            document.getElementById('ayin-content').style.boxShadow = '0 0 50px rgba(255,255,255,0.2)';
+        }
+
+        function resetAyinView() {
+            ayinRevealed = false;
+            
+            // ... (還原按鈕與圖標邏輯省略) ...
+            const btn = document.getElementById('ayin-reveal-btn');
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+
+            document.getElementById('icon-x').classList.remove('scale-50', 'opacity-0');
+            document.getElementById('icon-a').classList.add('opacity-0');
+            
+            document.getElementById('ayin-title').innerHTML = 'MANAGER <span class="text-red-500">X</span>';
+            document.getElementById('ayin-subtitle').innerText = 'Cognition Filter: Active';
+            document.getElementById('ayin-subtitle').style.color = '#6b7280'; 
+
+            const dataX = document.getElementById('ayin-data-x');
+            const dataA = document.getElementById('ayin-data-a');
+
+            // 1. 還原 X 的顯示
+            dataX.style.display = 'block';
+            setTimeout(() => {
+                dataX.style.opacity = '1';
+                dataX.style.transform = 'translateX(0)';
+            }, 50);
+
+            // 2. 隱藏 A
+            dataA.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none');
+            dataA.classList.remove('opacity-100', 'translate-x-0', 'pointer-events-auto');
+            
+            // 等待動畫結束後加上 hidden
+            setTimeout(() => {
+                dataA.classList.add('hidden'); // ★ 關鍵：加回 hidden
+            }, 500);
+
+            document.getElementById('ayin-content').style.borderColor = 'rgba(255,255,255,0.2)';
         }
 
         function resetAyinView() {
