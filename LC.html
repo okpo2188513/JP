@@ -367,23 +367,39 @@
             text-justify: inter-ideograph;
         }
         
-        /* Library Specific Styles */
+        /* Library & Gold Styles */
         .text-shadow-gold {
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.2);
         }
-        .library-node-line {
-            position: absolute;
-            background: linear-gradient(to bottom, rgba(255,215,0,0), rgba(255,215,0,0.5), rgba(255,215,0,0));
-            width: 1px;
-            z-index: 0;
+        
+        /* 自訂捲軸 (更細緻) */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
         }
-        /* 書本翻頁特效 */
-        @keyframes bookOpen {
-            0% { transform: perspective(1000px) rotateY(90deg); opacity: 0; }
-            100% { transform: perspective(1000px) rotateY(0deg); opacity: 1; }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
         }
-        .animate-book-open {
-            animation: bookOpen 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.6);
+        }
+
+        /* 書本翻頁特效 (優化版) */
+        @keyframes fadeSlideUp {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* 節點連線動畫 */
+        @keyframes flowGold {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
         }
     </style>
 </head>
@@ -932,62 +948,82 @@
         </div>
     </div>
     <!-- VIEW3 : ruina library (Hidden Initially) -->
-    <div id="library-view" class="hidden opacity-0 transition-opacity duration-1000 ease-in-out min-h-screen bg-[#050510] text-white font-serif relative overflow-hidden">
+    <div id="library-view" class="hidden opacity-0 transition-opacity duration-1000 ease-in-out min-h-screen bg-[#0b0b15] text-[#e0e0e0] font-serif relative overflow-hidden selection:bg-[#ffd700] selection:text-black">
         
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1a1a40] via-[#050510] to-[#000000] opacity-80"></div>
-            <div class="absolute top-0 left-0 w-full h-full opacity-30" style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');"></div>
+        <div class="absolute inset-0 z-0 pointer-events-none">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#1a1a2e_0%,_#050510_100%)]"></div>
+            <div class="absolute inset-0 opacity-20" style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-[#ffd700]/5 rounded-full animate-[spin_60s_linear_infinite]"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-[#ffd700]/5 rounded-full animate-[spin_40s_linear_infinite_reverse]"></div>
         </div>
 
-        <div class="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-50 border-b border-[#ffd700]/30 bg-[#050510]/90 backdrop-blur-md">
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 border border-[#ffd700] rounded-full flex items-center justify-center">
-                    <span class="text-[#ffd700] font-cinzel font-bold">L</span>
+        <div class="absolute top-0 left-0 w-full h-20 flex justify-between items-center px-8 z-50 bg-gradient-to-b from-[#050510] to-transparent pointer-events-none">
+            <div class="flex items-center space-x-4 pointer-events-auto">
+                <div class="w-10 h-10 border border-[#ffd700] flex items-center justify-center relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-[#ffd700]/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                    <span class="text-[#ffd700] font-cinzel font-bold text-xl relative z-10">L</span>
                 </div>
-                <div class="text-[#ffd700] font-cinzel font-bold text-lg md:text-xl tracking-widest text-shadow-gold">Library of Ruina</div>
+                <div class="flex flex-col">
+                    <span class="text-[#ffd700] font-cinzel text-lg tracking-[0.2em] leading-none text-shadow-gold">LIBRARY</span>
+                    <span class="text-[#ffd700]/50 font-cinzel text-xs tracking-[0.4em] leading-none mt-1">OF RUINA</span>
+                </div>
             </div>
-            <button onclick="returnToLobotomyFromLibrary()" class="px-6 py-2 border border-[#ffd700]/50 text-[#ffd700]/70 hover:bg-[#ffd700] hover:text-black hover:border-transparent transition-all duration-300 font-mono text-xs uppercase tracking-widest">
-                Return to Facility
+            
+            <button onclick="returnToLobotomyFromLibrary()" class="pointer-events-auto group flex items-center space-x-2 px-4 py-2 border-b border-transparent hover:border-[#ffd700] transition-all duration-300">
+                <span class="text-xs font-cinzel tracking-widest text-gray-400 group-hover:text-[#ffd700]">RETURN TO FACILITY</span>
+                <span class="text-[#ffd700] opacity-0 group-hover:opacity-100 transition-opacity">↩</span>
             </button>
         </div>
 
         <div class="flex flex-col md:flex-row h-screen pt-20 relative z-10">
             
-            <div class="w-full md:w-1/3 h-1/3 md:h-full border-b md:border-b-0 md:border-r border-[#ffd700]/20 bg-black/40 backdrop-blur-sm relative overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-[#ffd700]/10">
-                    <h3 class="text-[#ffd700] font-cinzel text-xl text-center tracking-[0.5em]">SEPHIROT</h3>
+            <div class="w-full md:w-1/3 lg:w-1/4 h-1/3 md:h-full border-r border-[#ffd700]/20 bg-[#050510]/80 backdrop-blur-md relative flex flex-col z-20 shadow-[5px_0_30px_rgba(0,0,0,0.5)]">
+                <div class="p-6 text-center border-b border-[#ffd700]/10 relative">
+                    <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#ffd700]/50 to-transparent"></div>
+                    <h3 class="text-[#ffd700] font-cinzel text-sm md:text-base tracking-[0.4em]">SEPHIROT</h3>
                 </div>
                 
-                <div id="library-tree-container" class="flex-1 overflow-y-auto custom-scrollbar p-8 relative">
-                    <div class="absolute left-1/2 top-0 bottom-0 w-px bg-[#ffd700]/20 -translate-x-1/2 pointer-events-none"></div>
-                    
+                <div id="library-tree-container" class="flex-1 overflow-y-auto custom-scrollbar py-12 relative scroll-smooth">
+                    <div class="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ffd700]/30 to-transparent -translate-x-1/2"></div>
                     </div>
             </div>
 
-            <div class="w-full md:w-2/3 h-2/3 md:h-full relative bg-[#0a0a1a] flex items-center justify-center overflow-hidden">
-                <div id="library-stage-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-700 opacity-30 grayscale hover:grayscale-0" style="background-image: url('https://limbuscompany.wiki.gg/images/4/4b/Library_of_Ruina_Background.png');"></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-[#050510] via-transparent to-[#050510]"></div>
+            <div class="w-full md:w-2/3 lg:w-3/4 h-2/3 md:h-full relative flex items-center justify-center overflow-hidden">
+                <div id="library-stage-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-out transform scale-105 opacity-40 blur-[2px]" style="background-image: url('https://limbuscompany.wiki.gg/images/4/4b/Library_of_Ruina_Background.png');"></div>
+                
+                <div class="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay" style="background-image: url('https://www.transparenttextures.com/patterns/cardboard.png');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#050510] via-[#050510]/50 to-transparent"></div>
 
-                <div id="library-stage-content" class="relative z-10 max-w-3xl px-8 text-center transition-all duration-500 transform translate-y-0 opacity-100">
+                <div id="library-stage-content" class="relative z-10 w-full max-w-4xl px-8 md:px-16 flex flex-col items-center">
                     
-                    <div class="animate-pulse mb-8 text-[#ffd700]">
-                        <svg class="w-24 h-24 mx-auto drop-shadow-[0_0_15px_rgba(255,215,0,0.5)]" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1">
-                            <rect x="30" y="20" width="40" height="60" />
-                            <line x1="30" y1="20" x2="70" y2="80" />
-                            <line x1="70" y1="20" x2="30" y2="80" />
-                        </svg>
+                    <div class="border border-[#ffd700]/30 bg-[#0a0a15]/90 p-1 md:p-2 shadow-[0_0_50px_rgba(255,215,0,0.1)] transform transition-all hover:scale-105 duration-500 backdrop-blur-sm max-w-lg w-full">
+                        <div class="border border-[#ffd700]/50 p-8 md:p-12 flex flex-col items-center text-center relative overflow-hidden">
+                            <div class="absolute top-2 left-2 w-4 h-4 border-t border-l border-[#ffd700]"></div>
+                            <div class="absolute top-2 right-2 w-4 h-4 border-t border-r border-[#ffd700]"></div>
+                            <div class="absolute bottom-2 left-2 w-4 h-4 border-b border-l border-[#ffd700]"></div>
+                            <div class="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-[#ffd700]"></div>
+
+                            <div class="text-[#ffd700] text-4xl mb-6 opacity-80">✉</div>
+                            
+                            <h2 class="text-3xl md:text-4xl font-bold font-cinzel text-[#e5e5e5] mb-4">
+                                INVITATION
+                            </h2>
+                            <div class="w-12 h-px bg-[#ffd700] mb-6"></div>
+                            <p class="text-gray-400 font-serif italic leading-loose text-sm md:text-base">
+                                "May you find your book in this place."<br>
+                                願你在這裡找到你的書。
+                            </p>
+                            
+                            <div class="mt-8 text-[10px] font-mono text-[#ffd700]/60 uppercase tracking-widest">
+                                Please select a floor to proceed
+                            </div>
+                        </div>
                     </div>
-                    <h2 class="text-4xl md:text-6xl font-bold font-cinzel text-transparent bg-clip-text bg-gradient-to-b from-[#ffd700] to-[#b8860b] mb-6">
-                        MAY YOU FIND YOUR BOOK
-                    </h2>
-                    <p class="text-gray-400 font-mono text-sm tracking-widest">
-                        Select a floor from the Sephirot Tree to enter.
-                    </p>
+
                 </div>
             </div>
         </div>
     </div>
-
     <!-- ALL MODALS (Shared across both views for simplicity) -->
     
     <!-- Lore Data Modal (With Interactive Title) -->
@@ -2722,11 +2758,10 @@
             }, 800);
         }
 
-        // ================= Library of Ruina Logic =================
+   // ================= Library of Ruina Logic (Polished) =================
         
-        // 樓層資料 (對應腦葉的 Sephirah，但身分變為指定司書)
         const libraryFloors = [
-            { id: "kether", name: "General Works", librarian: "Roland", title: "Patron Librarian of General Works", color: "#A0A0A0", layer: "Kether", desc: "總類層。這座圖書館的根基。無論是雜務還是接待，這裡都是起點。Roland，一名自稱九階收尾人的男子，在這裡協助 Angela 尋找那本至高之書。", quote: "這就是這該死的圖書館嗎？" },
+            { id: "kether", name: "General Works", librarian: "Roland", title: "Patron Librarian", color: "#CCCCCC", layer: "Kether", desc: "總類層。這座圖書館的根基。無論是雜務還是接待，這裡都是起點。Roland，一名自稱九階收尾人的男子，在這裡協助 Angela 尋找那本至高之書。", quote: "這就是這該死的圖書館嗎？" },
             { id: "malkuth", name: "History", librarian: "Malkuth", title: "Patron Librarian of History", color: "#D88D28", layer: "Asiyah", desc: "歷史層。燃燒的書架記錄著過去的錯誤與榮耀。Malkuth 已經不再是那個急躁的部長，她學會了直面過去，即使那段歷史充滿了傷痕。", quote: "歷史不僅僅是記錄，更是銘記。" },
             { id: "yesod", name: "Tech. Sciences", librarian: "Yesod", title: "Patron Librarian of Tech. Sciences", color: "#603F93", layer: "Asiyah", desc: "科技層。充滿了齒輪與數據的冷酷空間。Yesod 依然追求理性，但他開始理解，有些東西是冰冷的邏輯無法計算的。", quote: "即使世界崩塌，理性的支柱不能倒下。" },
             { id: "hod", name: "Literature", librarian: "Hod", title: "Patron Librarian of Literature", color: "#E08535", layer: "Asiyah", desc: "文學層。書寫著無數故事的地方。Hod 試圖通過故事來理解人心，並贖回她曾經犯下的罪孽。", quote: "願這個故事能迎來美好的結局。" },
@@ -2738,87 +2773,126 @@
             { id: "hokma", name: "Religion", librarian: "Hokma", title: "Patron Librarian of Religion", color: "#B0B0B0", layer: "Atziluth", desc: "宗教層。時間與信仰的殿堂。Hokma 依然忠誠於那唯一的信仰，並守護著圖書館的時間流動。", quote: "時間的流逝是公平的，也是無情的。" }
         ];
 
-        // 渲染生命之樹 (左側導航)
+        // 渲染生命之樹 (Refined Tree Node)
         function renderLibraryTree() {
             const container = document.getElementById('library-tree-container');
-            container.innerHTML = '<div class="absolute left-1/2 top-0 bottom-0 w-px bg-[#ffd700]/20 -translate-x-1/2 pointer-events-none"></div>'; // 重繪連接線
+            // 重繪中軸線
+            container.innerHTML = '<div class="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#ffd700]/30 to-transparent -translate-x-1/2"></div>'; 
 
             libraryFloors.forEach((floor, index) => {
                 const node = document.createElement('div');
-                node.className = "relative z-10 w-full flex flex-col items-center group cursor-pointer transition-all duration-300";
+                // 調整間距，讓樹看起來更修長
+                node.className = "relative z-10 w-full flex flex-col items-center group cursor-pointer transition-all duration-300 py-6"; 
                 node.onclick = () => selectLibraryFloor(floor);
 
+                // 根據層級設定不同的節點大小
+                let sizeClass = "w-12 h-12";
+                if (floor.layer === "Kether") sizeClass = "w-16 h-16"; // 總類層大一點
+
                 node.innerHTML = `
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-[#ffd700]/30 bg-[#050510] flex items-center justify-center group-hover:border-[#ffd700] group-hover:bg-[#ffd700]/10 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(255,215,0,0.4)] transition-all duration-300 relative">
-                        <span class="text-[#ffd700] font-bold text-lg md:text-2xl font-cinzel opacity-70 group-hover:opacity-100 transition-opacity">${floor.name[0]}</span>
+                    <div class="${sizeClass} rounded-full border border-[#ffd700]/40 bg-[#050510] flex items-center justify-center relative transition-all duration-500 group-hover:border-[#ffd700] group-hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] shadow-[0_0_10px_rgba(0,0,0,0.8)]">
                         
-                        <div id="indicator-${floor.id}" class="absolute inset-0 rounded-full border-2 border-[#ffd700] opacity-0 scale-125 transition-all duration-300"></div>
+                        <div class="absolute inset-1 rounded-full border border-[#ffd700]/10 group-hover:border-[#ffd700]/30 transition-all"></div>
+                        
+                        <span class="text-[#ffd700] font-bold font-cinzel opacity-60 group-hover:opacity-100 transition-opacity text-sm">${floor.name[0]}</span>
+                        
+                        <div id="indicator-${floor.id}" class="absolute inset-[-4px] rounded-full border border-[#ffd700] opacity-0 scale-90 transition-all duration-500"></div>
+                        
+                        <div class="absolute -top-6 w-px h-6 bg-gradient-to-b from-transparent to-[#ffd700]/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </div>
                     
-                    <div class="mt-2 text-center">
-                        <div class="text-[#ffd700] font-cinzel text-xs md:text-sm font-bold tracking-widest opacity-60 group-hover:opacity-100 group-hover:text-shadow-gold transition-all">${floor.name}</div>
-                        <div class="text-gray-500 text-[10px] uppercase tracking-wider">${floor.layer}</div>
+                    <div class="absolute left-full ml-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0 hidden md:block">
+                        <div class="text-[#ffd700] font-cinzel text-xs tracking-widest whitespace-nowrap text-shadow-gold">${floor.name}</div>
+                        <div class="text-gray-500 text-[9px] font-mono uppercase tracking-wider text-left border-t border-[#ffd700]/20 mt-1 pt-1">${floor.layer}</div>
                     </div>
                 `;
                 container.appendChild(node);
             });
+            
+            // 底部墊高
+            const spacer = document.createElement('div');
+            spacer.className = "h-24";
+            container.appendChild(spacer);
         }
 
-        // 選擇樓層 (右側顯示)
+        // 選擇樓層 (Refined Stage Display)
         function selectLibraryFloor(floor) {
             const stageContent = document.getElementById('library-stage-content');
             const stageBg = document.getElementById('library-stage-bg');
             
-            // 1. 更新選中狀態 (左側)
+            // 1. 更新選中狀態
             libraryFloors.forEach(f => {
                 const indicator = document.getElementById(`indicator-${f.id}`);
-                if (indicator) indicator.style.opacity = (f.id === floor.id) ? '1' : '0';
+                if (indicator) {
+                    indicator.style.opacity = (f.id === floor.id) ? '1' : '0';
+                    indicator.style.transform = (f.id === floor.id) ? 'scale(1)' : 'scale(0.9)';
+                    indicator.style.boxShadow = (f.id === floor.id) ? `0 0 15px ${floor.color}66` : 'none';
+                    // 改變節點邊框顏色
+                    indicator.parentElement.style.borderColor = (f.id === floor.id) ? floor.color : 'rgba(255,215,0,0.4)';
+                }
             });
 
-            // 2. 切換動畫 (淡出)
+            // 2. 切換動畫
             stageContent.style.opacity = '0';
-            stageContent.style.transform = 'translateY(20px)';
+            stageContent.style.transform = 'translateY(10px)';
+            
+            // 背景稍微放大模糊
+            stageBg.style.transform = 'scale(1.1)';
+            stageBg.style.filter = 'blur(4px) grayscale(80%)';
 
             setTimeout(() => {
-                // 3. 更新內容
+                // 3. 更新內容 (更像書本排版)
                 stageContent.innerHTML = `
-                    <div class="animate-book-open origin-left">
-                        <div class="border-l-4 pl-6 mb-8 text-left" style="border-color: ${floor.color}">
-                            <h4 class="text-sm font-mono text-gray-400 uppercase tracking-[0.2em] mb-2">${floor.layer} LAYER</h4>
-                            <h2 class="text-5xl md:text-7xl font-bold font-cinzel text-white mb-2" style="text-shadow: 0 0 20px ${floor.color}44">${floor.librarian}</h2>
-                            <h3 class="text-xl text-[#ffd700] font-cinzel italic opacity-80">${floor.title}</h3>
+                    <div class="animate-slide-up w-full text-left">
+                        <div class="flex flex-col md:flex-row items-start md:items-end justify-between border-b border-[#ffd700]/30 pb-4 mb-8">
+                            <div>
+                                <div class="text-[#ffd700] font-mono text-xs tracking-[0.2em] mb-2 opacity-70">FLOOR OF ${floor.name.toUpperCase()}</div>
+                                <h2 class="text-5xl md:text-7xl font-bold font-cinzel text-white leading-none" style="text-shadow: 0 0 30px ${floor.color}66">
+                                    ${floor.librarian}
+                                </h2>
+                            </div>
+                            <div class="text-right mt-4 md:mt-0">
+                                <div class="text-2xl font-serif italic text-[#ffd700]" style="color: ${floor.color}">${floor.title}</div>
+                            </div>
                         </div>
 
-                        <blockquote class="text-xl md:text-2xl text-gray-300 italic font-serif leading-relaxed mb-8 border-t border-b border-gray-800 py-6">
-                            "${floor.quote}"
-                        </blockquote>
-
-                        <div class="text-sm text-gray-400 leading-loose text-justify font-light max-w-xl mx-auto">
-                            ${floor.desc}
-                        </div>
-
-                        <div class="mt-12">
-                            <button class="px-8 py-3 bg-transparent border border-[#ffd700] text-[#ffd700] hover:bg-[#ffd700] hover:text-black transition-all uppercase tracking-widest font-bold text-xs group relative overflow-hidden">
-                                <span class="relative z-10">Initiate Reception</span>
-                                <div class="absolute inset-0 bg-[#ffd700] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
-                            </button>
+                        <div class="flex flex-col md:flex-row gap-12">
+                            <div class="md:w-1/3">
+                                <blockquote class="text-xl md:text-2xl text-gray-300 font-serif leading-relaxed italic border-l-2 pl-6 py-2" style="border-color: ${floor.color}">
+                                    "${floor.quote}"
+                                </blockquote>
+                            </div>
+                            
+                            <div class="md:w-2/3">
+                                <p class="text-gray-400 text-sm md:text-base leading-loose font-light text-justify">
+                                    ${floor.desc}
+                                </p>
+                                
+                                <div class="mt-12 flex items-center space-x-6">
+                                    <button class="px-8 py-3 bg-[#ffd700] text-black font-cinzel font-bold text-sm tracking-widest hover:bg-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,215,0,0.3)]">
+                                        ENTER FLOOR
+                                    </button>
+                                    <div class="h-px flex-1 bg-[#ffd700]/20"></div>
+                                    <div class="text-[10px] font-mono text-gray-500">RECEPTION READY</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
                 
-                // 這裡可以根據樓層換背景圖 (目前先用統一的，你可以之後找每個樓層的圖來換)
-                // stageBg.style.backgroundImage = `url('...')`;
+                // 背景恢復
+                stageBg.style.transform = 'scale(1.05)';
+                stageBg.style.filter = 'blur(0px) grayscale(20%)';
+                // 這裡可以加入換圖邏輯：stageBg.style.backgroundImage = ...
 
                 // 4. 切換動畫 (淡入)
                 stageContent.style.opacity = '1';
                 stageContent.style.transform = 'translateY(0)';
-            }, 300);
+            }, 400);
         }
 
         // 修改原本的 switch logic，加入渲染樹的步驟
-        const originalSwitchToLibrary = switchToLibraryView; // 保存舊函數引用 (如果有)
-        
-        // 覆蓋為新邏輯
+        // 確保覆蓋原本的 switchToLibraryView
         switchToLibraryView = function() {
             closeAngelaModal();
             lobotomyView.style.opacity = '0';
