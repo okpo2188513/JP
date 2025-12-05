@@ -2525,28 +2525,41 @@
             const layer2 = document.getElementById('angela-layer-2');
             const modalContent = document.getElementById('angela-content');
             const title = document.getElementById('angela-title');
-            const iconText = document.getElementById('angela-icon-text');
             const status = document.getElementById('angela-status');
+            // 這裡改為獲取容器，而不是裡面的文字 span
+            const circleInner = document.getElementById('angela-circle-inner'); 
 
             // 1. 視覺故障效果
             btn.innerHTML = "ACCESS DENIED // OVERRIDE";
             btn.classList.add('text-red-500', 'border-red-500', 'animate-pulse');
             
             modalContent.style.borderColor = '#7f1d1d'; // Red border
-            modalContent.style.boxShadow = '0 0 50px rgba(220,38,38,0.2)';
+            modalContent.style.boxShadow = '0 0 50px rgba(220,38,38,0.3)'; // 加強紅色光暈
 
-            // 2. 文字與圖標變化
+            // 2. 文字變化
             title.style.color = '#ef4444'; // Red
-            title.innerText = "THE LIBRARIAN"; // 變更稱號
+            title.innerText = "THE LIBRARIAN"; 
             
             status.innerText = "Script: Terminated";
             status.style.color = '#ef4444';
+            status.classList.add('animate-pulse'); // 讓狀態也閃爍
 
-            iconText.innerText = "👁️";
-            iconText.style.color = '#ef4444';
-            document.getElementById('angela-circle-outer').style.animationDuration = "0.5s"; // 加速旋轉
+            // 3. 圖標變化：用 CSS 繪製機械義眼替代原本的文字
+            // 我們插入一個新的結構：一個發光的紅色橢圓容器，裡面有一個垂直的白色瞳孔
+            circleInner.innerHTML = `
+                <div class="relative w-24 h-14 bg-red-950/50 border-2 border-red-500 rounded-[100%] flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.6)] overflow-hidden transition-all duration-500 group-hover:scale-110">
+                    <div class="w-3 h-8 bg-white rounded-full shadow-[0_0_20px_white] animate-pulse relative z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-red-500/30 to-transparent animate-scan opacity-50"></div>
+                </div>
+            `;
+            
+            // 加速外部圓環旋轉，製造緊張感
+            document.getElementById('angela-circle-outer').style.animationDuration = "1s"; 
+            document.getElementById('angela-circle-outer').querySelector('div').style.backgroundColor = '#ef4444'; // 外部小球也變紅
+            document.getElementById('angela-circle-outer').querySelector('div').style.boxShadow = '0 0 20px #ef4444';
 
-            // 3. 內容切換 (Glitch Transition)
+
+            // 4. 內容切換 (Glitch Transition)
             layer1.style.opacity = '0';
             setTimeout(() => {
                 layer1.style.display = 'none';
@@ -2576,34 +2589,23 @@
             const status = document.getElementById('angela-status');
             status.innerText = "System Normal";
             status.style.color = '#155e75';
+            status.classList.remove('animate-pulse');
 
-            const iconText = document.getElementById('angela-icon-text');
-            iconText.innerText = "AI";
-            iconText.style.color = '#67e8f9';
+            // 還原圖標為原本的 "AI" 文字結構
+            const circleInner = document.getElementById('angela-circle-inner');
+            circleInner.innerHTML = '<span id="angela-icon-text" class="font-mono text-4xl font-bold text-cyan-300 animate-pulse">AI</span>';
+            
+            // 還原外部圓環
             document.getElementById('angela-circle-outer').style.animationDuration = "10s";
+            document.getElementById('angela-circle-outer').querySelector('div').style.backgroundColor = '#06b6d4'; // 變回青色
+            document.getElementById('angela-circle-outer').querySelector('div').style.boxShadow = '0 0 10px cyan';
+
 
             // 還原內容
             document.getElementById('angela-layer-2').classList.add('hidden');
             const layer1 = document.getElementById('angela-layer-1');
             layer1.style.display = 'block';
             setTimeout(() => layer1.style.opacity = '1', 50);
-        }
-        
-        // 彩蛋：點擊左側圓圈圖標會有微小的故障反應
-        function triggerAngelaGlitch() {
-            if(angelaGlitchActive) return;
-            const title = document.getElementById('angela-title');
-            const originalText = title.innerText;
-            
-            // 隨機亂碼
-            const chars = "!@#$%^&*()";
-            title.innerText = originalText.split('').map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-            title.style.color = "white";
-            
-            setTimeout(() => {
-                title.innerText = originalText;
-                title.style.color = '#06b6d4';
-            }, 200);
         }
     </script>
 </body>
