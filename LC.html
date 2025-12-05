@@ -1433,20 +1433,18 @@
                         </div>
                     </div>
 
-                    <div id="ayin-data-a" class="absolute inset-0 p-10 space-y-8 transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a]">
-                        <div class="border-l-4 border-yellow-500 pl-6">
-                            <h3 class="text-3xl font-bold text-white mb-4 font-cinzel">Ayin <span class="text-sm text-gray-500 font-normal ml-2">(The Architect)</span></h3>
-                            <blockquote class="text-xl italic text-gray-300 font-light mb-6">
-                                "這條路將鋪滿灰燼與罪惡，但如果這一切的盡頭能有光芒..."
-                            </blockquote>
-                            <p class="text-gray-400 text-sm leading-loose text-justify font-light">
-                                腦葉公司的創始人，光之種計畫的設計者。
-                                <br><br>
-                                在愛人 Carmen 死後，為了完成她「治癒人類心靈」的遺願，他陷入了瘋狂的執著。他建造了這座地下設施，甚至不惜將 Carmen 的大腦製成 Cogito 工廠，創造出了異想體與 E.G.O。
-                                <br><br>
-                                為了客觀地觀測並完成劇本，他將自己的記憶分割，創造了無數個「X」。這是一場為了斬斷絕望循環而進行的、長達萬年的自我獻祭。
-                            </p>
+                    <div id="ayin-data-a" class="absolute inset-0 p-0 flex flex-col transition-all duration-1000 opacity-0 translate-x-10 pointer-events-none bg-[#0a0a0a]">
+                        
+                        <div class="flex border-b border-gray-800 bg-black/50">
+                            <button onclick="switchAyinFragment('abel')" class="flex-1 py-4 text-xs font-cinzel hover:bg-white/5 hover:text-white text-gray-500 transition-all border-b-2 border-transparent hover:border-gray-500 focus:text-white focus:border-white" id="btn-abel">ABEL</button>
+                            <button onclick="switchAyinFragment('abram')" class="flex-1 py-4 text-xs font-cinzel hover:bg-white/5 hover:text-white text-gray-500 transition-all border-b-2 border-transparent hover:border-gray-500 focus:text-white focus:border-white" id="btn-abram">ABRAM</button>
+                            <button onclick="switchAyinFragment('adam')" class="flex-1 py-4 text-xs font-cinzel hover:bg-white/5 hover:text-white text-gray-500 transition-all border-b-2 border-transparent hover:border-gray-500 focus:text-white focus:border-white" id="btn-adam">ADAM</button>
+                            <button onclick="switchAyinFragment('ayin')" class="flex-1 py-4 text-xs font-cinzel hover:bg-white/5 hover:text-yellow-500 text-yellow-700 transition-all border-b-2 border-transparent hover:border-yellow-500 focus:text-yellow-500 focus:border-yellow-500 font-bold" id="btn-ayin">AYIN</button>
                         </div>
+
+                        <div id="ayin-fragment-container" class="flex-1 p-10 overflow-y-auto custom-scrollbar relative">
+                            </div>
+                    </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="border-t border-yellow-500/50 pt-4">
@@ -2990,6 +2988,131 @@
             `;
             
             dayGrid.appendChild(dayBox);
+        }
+        
+        // ================= Ayin Personality Fragments Logic =================
+        
+        const ayinFragments = {
+            'abel': {
+                title: "The Regressor",
+                day: "Day 47",
+                color: "#9ca3af", // Gray
+                quote: "請回頭吧。這並不難...只要放下你揹負的一切，腳步就會輕盈如羽毛。",
+                desc: "【疲憊與停滯】<br>在無盡的循環中感到厭倦的 A。他選擇了逃避，認為「維持現狀」就是最好的救贖。他建立了高效率的設施，但拒絕邁向痛苦的未來。他就像該隱與亞伯中的亞伯，試圖獻上「完美但空洞」的祭品來換取安寧。"
+            },
+            'abram': {
+                title: "The Sinner",
+                day: "Day 48",
+                color: "#3b82f6", // Blue
+                quote: "我自名為亞伯蘭，是為了銘記我們犧牲無辜者的罪孽...我們從一開始就是錯的。",
+                desc: "【絕望與贖罪】<br>被罪惡感壓垮的 A。他無法原諒自己為了計畫所犧牲的無數生命（包括 Lisa 與 Enoch）。他沉溺於過去的傷痛，認為自己不配獲得救贖，只想封閉一切，在無盡的愧疚中自我懲罰。"
+            },
+            'adam': {
+                title: "The Prophet",
+                day: "Day 49",
+                color: "#ef4444", // Red
+                quote: "那名為『理性』的愚蠢神明統治了這世界太久...我們將親手把它從神壇上拉下來。",
+                desc: "【傲慢與扭曲】<br>完全接受了 Carmen 聲音的 A。他認為既然世界充滿了痛苦，不如讓所有人都變成「怪物」（異想體/E.G.O），釋放本能與慾望。他想用光之種創造一個混亂的新世界，是 Ayin 最大的陰影與誘惑。"
+            },
+            'ayin': {
+                title: "The Architect",
+                day: "Day 50",
+                color: "#eab308", // Yellow/Gold
+                quote: "直面恐懼，創造未來。",
+                desc: "【整合與超越】<br>統合了所有碎片，找回自我的 A。他理解了 Abel 的疲憊、Abram 的罪惡與 Adam 的慾望，但沒有被它們吞噬。他接納了過去的一切，並決定斬斷循環，播撒光之種，給予人類「以自己的意志活下去」的力量。"
+            }
+        };
+
+        function switchAyinFragment(fragmentId) {
+            const data = ayinFragments[fragmentId];
+            const container = document.getElementById('ayin-fragment-container');
+            
+            // 1. 更新按鈕狀態 (Highlight)
+            ['abel', 'abram', 'adam', 'ayin'].forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (id === fragmentId) {
+                    btn.classList.add('border-opacity-100', 'bg-white/10');
+                    btn.style.color = data.color;
+                    btn.style.borderColor = data.color;
+                } else {
+                    btn.classList.remove('border-opacity-100', 'bg-white/10');
+                    btn.style.color = '#6b7280'; // Reset text color
+                    btn.style.borderColor = 'transparent';
+                }
+            });
+
+            // 2. 切換內容 (淡入淡出)
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="border-l-4 pl-6 mb-8 transition-all duration-500" style="border-color: ${data.color}">
+                        <div class="text-xs font-mono uppercase tracking-widest mb-2" style="color: ${data.color}">${data.day} // ${data.title}</div>
+                        <h3 class="text-4xl font-bold text-white mb-6 font-cinzel">${fragmentId.toUpperCase()}</h3>
+                        <blockquote class="text-xl italic font-light leading-relaxed text-gray-300">
+                            "${data.quote}"
+                        </blockquote>
+                    </div>
+                    
+                    <div class="text-sm text-gray-400 leading-loose text-justify font-light space-y-4">
+                        <p>${data.desc}</p>
+                    </div>
+
+                    <div class="absolute top-10 right-10 text-9xl font-black opacity-5 select-none font-cinzel pointer-events-none" style="color: ${data.color}">
+                        ${fragmentId[0].toUpperCase()}
+                    </div>
+                `;
+                
+                // 恢復顯示
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 200);
+        }
+
+        // 修改原本的 revealAyinTrueSelf，加入預設選擇 Ayin 的邏輯
+        const originalRevealAyin = revealAyinTrueSelf; // 保存舊邏輯
+        
+        // 覆蓋舊邏輯 (或者你可以直接修改舊函數)
+        revealAyinTrueSelf = function() {
+            if (ayinRevealed) return;
+            ayinRevealed = true;
+
+            // ... (保留原本的 UI 變化代碼) ...
+            const btn = document.getElementById('ayin-reveal-btn');
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+
+            document.getElementById('icon-x').classList.remove('scale-100', 'opacity-100');
+            document.getElementById('icon-x').classList.add('scale-50', 'opacity-0');
+            
+            document.getElementById('icon-a').classList.remove('scale-150', 'opacity-0', 'blur-sm');
+            document.getElementById('icon-a').classList.add('scale-100', 'opacity-100', 'blur-0');
+            document.getElementById('icon-a').style.textShadow = "0 0 20px rgba(255,255,255,0.8)";
+
+            document.getElementById('ayin-title').innerHTML = 'THE <span class="text-yellow-500">ARCHITECT</span>';
+            document.getElementById('ayin-subtitle').innerText = 'System: Kether Layer // Unlocked';
+            document.getElementById('ayin-subtitle').style.color = '#eab308';
+
+            const dataX = document.getElementById('ayin-data-x');
+            const dataA = document.getElementById('ayin-data-a');
+
+            dataX.style.opacity = '0';
+            dataX.style.transform = 'translateX(-20px)';
+            
+            setTimeout(() => {
+                dataX.style.display = 'none';
+                
+                dataA.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none');
+                dataA.classList.add('opacity-100', 'translate-x-0', 'pointer-events-auto');
+                
+                // ★★★ 新增：預設顯示 Ayin 分頁 ★★★
+                switchAyinFragment('ayin');
+                
+            }, 500);
+            
+            document.getElementById('ayin-content').style.borderColor = '#ffffff';
+            document.getElementById('ayin-content').style.boxShadow = '0 0 50px rgba(255,255,255,0.2)';
         }
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
